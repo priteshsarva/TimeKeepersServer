@@ -17,10 +17,10 @@ const baseUrls = [
    // "https://timezone17.cartpe.in/",
    // "https://watchflex.cartpe.in/",
    // "https://mangoenterprise.cartpe.in/",
-   "https://zeewatches.cartpe.in/",
-   // "https://maenterprise.cartpe.in/",
-   // "https://eye-care.cartpe.in/",
-   // "https://famwatch.cartpe.in/"
+   // "https://zeewatches.cartpe.in/",
+   "https://maenterprise.cartpe.in/",
+   "https://eye-care.cartpe.in/",
+   "https://famwatch.cartpe.in/"
 ];
 
 
