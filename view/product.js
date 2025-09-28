@@ -86,11 +86,11 @@ const categories = {
     "Formal": [
         "Loafers Or Formals", "Formals", "Party Wear Shoes"
     ],
-    "Ladies Watch": [
-        "Ladies Watch", "Watches For Her", "Ladies watch", "Girls Watch", "Ledish+Watch"
+    "Womens Watch": [
+        "Womens Watch", "Ladies Watch", "Watches For Her", "Ladies watch", "Girls Watch", "Ledish+Watch"
     ],
     "Mens Watch": [
-        "Mens Watch", "Watches For Men"
+        "Mens Watch", "Watches For Men", "Mens Watch"
     ]
 };
 
@@ -155,8 +155,6 @@ product.get('/search', (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const offset = (page - 1) * limit;
     console.log(category);
-
-
 
     // let sql = `SELECT * FROM products WHERE 1=1 AND sizeName <> '[]' `;
     let sql = `SELECT * FROM products WHERE 1=1 AND availability = 1 `;
