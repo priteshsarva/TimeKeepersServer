@@ -85,6 +85,12 @@ const categories = {
     // ],
     "Formal": [
         "Loafers Or Formals", "Formals", "Party Wear Shoes"
+    ],
+    "Ladies Watch": [
+        "Ladies Watch", "Watches For Her", "Ladies watch", "Girls Watch", "Ledish+Watch"
+    ],
+    "Mens Watch": [
+        "Mens Watch", "Watches For Men"
     ]
 };
 
