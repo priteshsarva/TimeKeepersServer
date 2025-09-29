@@ -87,10 +87,10 @@ const categories = {
         "Loafers Or Formals", "Formals", "Party Wear Shoes"
     ],
     "Womens Watch": [
-        "Womens Watch", "Ladies Watch", "Watches For Her", "Ladies watch", "Girls Watch", "Ledish+Watch","Women Watch"
+        "Womens Watch", "Ladies Watch", "Watches For Her", "Ladies watch", "Girls Watch", "Ledish+Watch", "Women Watch"
     ],
     "Mens Watch": [
-        "Mens Watch", "Watches For Men", "Men's Watch" ,"Men Watch","men watch"
+        "Mens Watch", "Watches For Men", "Men's Watch", "Men Watch", "men watch"
     ]
 };
 
@@ -411,6 +411,89 @@ product.get('/update-stale-sizes', (req, res) => {
 });
 
 
+// API: Mark selected categories as unavailable
+product.get('/mark-categories-unavailable', (req, res) => {
+    const blockedCategories = [
+        "Perfume For Women",
+        "Perfume For Men",
+        "Couple Watches",
+        "G-Shock In SALE",
+        "Wall Clock",
+        "Belts",
+        "Wallet",
+        "Wallets and Belts",
+        "G-SHOCK+",
+        "WALLET+BELT",
+        "Sunglasses and Frames",
+        "Hand bags",
+        "Home Decor",
+        "Diwali Offer 2022",
+        "Sunglasses"
+    ];
+
+    // Prepare SQL placeholders (?, ?, ?, ...)
+    const placeholders = blockedCategories.map(() => '?').join(',');
+    const updateSQL = `
+        UPDATE products 
+        SET availability = 0, productLastUpdated = ? 
+        WHERE catName IN (${placeholders})
+    `;
+
+    const now = Date.now();
+
+    DB.run(updateSQL, [now, ...blockedCategories], function (err) {
+        if (err) {
+            console.error('Error updating categories:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+
+        console.log(`Marked ${this.changes} products as unavailable`);
+        res.status(200).json({
+            message: 'Categories marked unavailable successfully',
+            updatedCount: this.changes,
+            blockedCategories
+        });
+    });
+});
+
+product.get('/set-luxury-watch-category', (req, res) => {
+    console.log("Hit /set-luxury-watch-category API");
+
+    const targetSources = [
+        "https://wristifyreseller.cartpe.in/",
+        "https://watchfactorys.cartpe.in/",
+        "https://watchkart.cartpe.in/",
+        "https://timepiece.cartpe.in/",
+        "https://hypewrist.cartpe.in/"
+    ];
+
+    const placeholders = targetSources.map(() => '?').join(',');
+    const updateSQL = `
+        UPDATE products 
+        SET catName = 'Luxury Watch', productLastUpdated = ? 
+        WHERE productFetchedFrom IN (${placeholders})
+    `;
+
+    const now = Date.now();
+    const params = [now, ...targetSources];
+
+    console.log("Executing SQL:", updateSQL);
+    console.log("With params:", params);
+
+    DB.run(updateSQL, params, function (err) {
+        if (err) {
+            console.error('Error updating luxury watch categories:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+
+        console.log(`Updated ${this.changes} products to category 'Luxury Watch'`);
+        return res.status(200).json({
+            message: "Luxury Watch category applied successfully",
+            updatedCount: this.changes,
+            updatedSources: targetSources
+        });
+    });
+});
 
 
 
@@ -452,7 +535,6 @@ product.get('/results/', (req, res) => {
         });
     });
 });
-
 
 
 product.get('/:id', (req, res) => {
