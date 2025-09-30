@@ -133,7 +133,7 @@ product.get('/all', (req, res) => {
     const offset = (page - 1) * limit;
 
     // const sql = `SELECT * FROM PRODUCTS WHERE sizeName <> '[]' ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC LIMIT ? OFFSET ?`;
-    const sql = `SELECT * FROM PRODUCTS WHERE availability = 1 ORDER BY productDateCreation DESC LIMIT ? OFFSET ?`;
+    const sql = `SELECT * FROM PRODUCTS WHERE availability IN (1, TRUE, 'true')   ORDER BY productDateCreation DESC LIMIT ? OFFSET ?`;
 
     try {
         DB.all(sql, [limit, offset], (err, rows) => {
@@ -157,7 +157,7 @@ product.get('/search', (req, res) => {
     console.log(category);
 
     // let sql = `SELECT * FROM products WHERE 1=1 AND sizeName <> '[]' `;
-    let sql = `SELECT * FROM products WHERE 1=1 AND availability = 1 `;
+    let sql = `SELECT * FROM products WHERE 1=1 AND availability IN (1, TRUE, 'true') `;
     const params = [];
 
     // Handle q
@@ -249,22 +249,20 @@ product.get('/search', (req, res) => {
 
 product.get('/firstdata', (req, res) => {
     const categories = [
-        "Men's Shoe",
-        "Slides/Crocs",
-        "Women's Shoe",
-        "UA Quality",
-        "Formal"
+        "Mens Watch",
+        "Ladies Watch",
+        "Luxury Watch",
     ];
 
-    const itemsPerCategory = 5;
+    const itemsPerCategory = 30;
     const allPromises = categories.map(category => {
         return new Promise((resolve, reject) => {
             DB.all(
                 // `SELECT * FROM products  WHERE sizeName <> '[]' AND LOWER(catName) LIKE ?  ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC LIMIT ?`
-                // `SELECT * FROM products  WHERE sizeName <> '[]' AND LOWER(catName) LIKE ?  ORDER BY productDateCreation DESC LIMIT ?`
-                `SELECT * FROM products WHERE availability = 1 ORDER BY productDateCreation DESC LIMIT ?`
+                `SELECT * FROM products WHERE availability IN (1, TRUE, 'true') AND LOWER(catName) LIKE ?  ORDER BY productDateCreation DESC LIMIT ?`
+                // `SELECT * FROM products WHERE availability IN (1, TRUE, 'true') ORDER BY productDateCreation DESC LIMIT ?`
                 ,
-                [itemsPerCategory],
+                [category, itemsPerCategory],
                 (err, rows) => {
                     if (err) reject(err);
                     resolve(rows);
