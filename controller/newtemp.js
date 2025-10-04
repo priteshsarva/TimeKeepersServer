@@ -114,29 +114,63 @@ async function fetchDataa(baseUrls) {
     console.log(Date.now());
     gitAutoCommitAndPush();
 
-    // while (true) {
-    const browser = await puppeteer.launch({
-        //old
-        // executablePath: '/usr/bin/chromium', // for server
-        // executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
 
-        // headless: true, // Ensures stability in recent Puppeteer versions
+
+    const browser = await puppeteer.launch({
+        headless: process.env.PUPPETEER_HEADLESS === 'true',
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
         defaultViewport: { width: 1080, height: 800 },
         args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            // "--single-process",
-            "--no-zygote",
-            "--disable-dev-shm-usage",
-            "--disable-accelerated-2d-canvas",
-            "--disable-gpu"
-        ],
-        //new
-        headless: process.env.PUPPETEER_HEADLESS === 'true', // Convert string to boolean
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu',
+            '--no-zygote',
+            '--window-size=1080,800',
+            '--start-maximized'
+        ]
     });
+
     const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+
+    // ✅ Use realistic headers
+    await page.setUserAgent(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+        '(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+    );
+    await page.setExtraHTTPHeaders({
+        'accept-language': 'en-US,en;q=0.9',
+        'upgrade-insecure-requests': '1'
+    });
+
+    // ✅ Optional: add random delay to look human
+    await page.waitForTimeout(Math.floor(Math.random() * 2000) + 1000);
+
+    ///old code--------------------------------------
+    // while (true) {
+    // const browser = await puppeteer.launch({
+    //     //old
+    //     // executablePath: '/usr/bin/chromium', // for server
+    //     // executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+
+    //     // headless: true, // Ensures stability in recent Puppeteer versions
+    //     defaultViewport: { width: 1080, height: 800 },
+    //     args: [
+    //         "--no-sandbox",
+    //         "--disable-setuid-sandbox",
+    //         // "--single-process",
+    //         "--no-zygote",
+    //         "--disable-dev-shm-usage",
+    //         "--disable-accelerated-2d-canvas",
+    //         "--disable-gpu"
+    //     ],
+    //     //new
+    //     headless: process.env.PUPPETEER_HEADLESS === 'true', // Convert string to boolean
+    //     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+    // });
+    // const page = await browser.newPage();
+    // await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
 
     const allproducts = [];
 
@@ -164,7 +198,7 @@ async function fetchDataa(baseUrls) {
 
 
     // Call the function when your task is done
-     gitAutoCommitAndPush();
+    gitAutoCommitAndPush();
     console.log("finished");
     console.log(Date.now());
     return allproducts;
