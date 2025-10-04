@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import { rejects } from 'assert';
 import "dotenv/config";
 import { exec } from 'child_process';
-
+import { humanizePage, humanType } from './humanize.js';
 
 // const baseUrls = ['https://oneshoess.cartpe.in', 'https://reseller-store.cartpe.in'];
 // const baseUrls = ['https://oneshoess.cartpe.in'];
@@ -145,7 +145,8 @@ async function fetchDataa(baseUrls) {
     });
 
     // ✅ Optional: add random delay to look human
-    await page.waitForTimeout(Math.floor(Math.random() * 2000) + 1000);
+    await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 2000) + 1000));
+
 
     ///old code--------------------------------------
     // while (true) {
@@ -243,7 +244,7 @@ async function scrapeCategories(page, fullUrl, retries = 3) {
 // Function to scrape products
 async function scrapeProducts(page, categories, baseUrl) {
     const products = [];
-
+    await humanizePage(page, { mouseMoves: 3 });
     // Loop through each category
     for (const cat of categories) {
         const catProductss = []
