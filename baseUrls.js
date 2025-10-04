@@ -22,10 +22,10 @@ const baseUrls = [
    // "https://eye-care.cartpe.in/",
    // "https://famwatch.cartpe.in/",
    // Luxury watch
-   "https://wristifyreseller.cartpe.in/",
+   // "https://wristifyreseller.cartpe.in/",
    // "https://watchfactorys.cartpe.in/",
    // "https://watchkart.cartpe.in/",
-   // "https://timepiece.cartpe.in/",
+   "https://timepiece.cartpe.in/",
    // "https://hypewrist.cartpe.in/",
 
 ];
