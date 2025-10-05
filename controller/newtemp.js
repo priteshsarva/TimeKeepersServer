@@ -193,6 +193,7 @@ async function fetchDataa(baseUrls) {
         }
     }
 
+
     // Close the browser after scraping all URLs
     await browser.close();
 
