@@ -1,4 +1,9 @@
 const baseUrls = [
+   "https://wristtimess.cartpe.in/",
+   "https://watchclub.cartpe.in/",
+   "https://watchcultures.cartpe.in/",
+   "https://bismiwatches.cartpe.in/",
+   "https://awwaltime11.cartpe.in/",
    "https://watchhouse11.cartpe.in/",
    "https://jilaniwatches11.cartpe.in/",
    "https://saenterprise.cartpe.in/",
