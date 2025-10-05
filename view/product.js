@@ -468,12 +468,12 @@ product.get('/set-luxury-watch-category', (req, res) => {
     const placeholders = targetSources.map(() => '?').join(',');
     const updateSQL = `
         UPDATE products 
-        SET catName = 'Luxury Watch', productLastUpdated = ? 
+        SET catName = 'Luxury Watch' 
         WHERE productFetchedFrom IN (${placeholders})
     `;
 
-    const now = Date.now();
-    const params = [now, ...targetSources];
+    
+    const params = [ ...targetSources];
 
     console.log("Executing SQL:", updateSQL);
     console.log("With params:", params);
