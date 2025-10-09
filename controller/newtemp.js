@@ -712,12 +712,7 @@ async function updateProduct(product) {
                 updates.push(`productOriginalPrice = ?`);
                 values.push(product.productOriginalPrice);
             }
-            if (typeof product.catName !== 'undefined') {
-                if (product.catName !== row[0].catName) {
-                    updates.push(`catName = ?`);
-                    values.push(product.catName + ", " + row[0].catName);
-                }
-            }
+           
 
             if (typeof product.sizeName !== 'undefined') {
                 updates.push(`sizeName = ?`);
