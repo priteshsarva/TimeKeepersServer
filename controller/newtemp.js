@@ -10,6 +10,8 @@ import { rejects } from 'assert';
 import "dotenv/config";
 import { exec } from 'child_process';
 import { humanizePage, humanType } from './humanize.js';
+import { log } from 'console';
+import { upsertProductSafe } from './wpBulkSafeSync.js'
 
 // const baseUrls = ['https://oneshoess.cartpe.in', 'https://reseller-store.cartpe.in'];
 // const baseUrls = ['https://oneshoess.cartpe.in'];
@@ -22,16 +24,8 @@ puppeteer.use(StealthPlugin());
 DB.run = promisify(DB.run);
 DB.get = promisify(DB.get);
 
-
-
-
-
-
-
-
 // Utility function to introduce delays
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
 
 // Get the current directory name
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -342,9 +336,9 @@ async function scrapeProducts(page, categories, baseUrl) {
 
         try {
             console.log("from try block");
-
             for (const eachproduct of catProductss) {
-                await updateProduct(eachproduct);
+                const productId = await updateProduct(eachproduct);
+                await upsertProductSafe(eachproduct, productId);
                 console.log("From Each Product");
             }
             products.push(...catProductss)
@@ -413,50 +407,51 @@ async function scrapeProducts(page, categories, baseUrl) {
 //     }
 // }
 
-async function addProductToDatabase(product) {
+
+
+
+function addProductToDatabase(product, callback) {
     console.log("from add product");
     console.log(product);
 
-    try {
-        const sql = `INSERT INTO PRODUCTS (
-            productName, productOriginalPrice, productBrand, featuredimg, 
-            sizeName, productUrl, imageUrl,videoUrl, availability, productShortDescription, 
-            catName, productFetchedFrom, productLastUpdated
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)`;
+    const sql = `INSERT INTO PRODUCTS (
+        productName, productOriginalPrice, productBrand, featuredimg, 
+        sizeName, productUrl, imageUrl, videoUrl, availability, productShortDescription, 
+        catName, productFetchedFrom, productLastUpdated
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        // Execute the INSERT query
-        await DB.run(sql, [
-            product.productName,
-            product.productOriginalPrice,
-            product.productBrand,
-            product.featuredimg,
-            JSON.stringify(product.sizeName),
-            product.productUrl,
-            JSON.stringify(product.imageUrl),
-            product.videoUrl,
-            product.availability,
-            product.productShortDescription,
-            product.catName,
-            product.productFetchedFrom,
+    const values = [
+        product.productName,
+        product.productOriginalPrice,
+        product.productBrand,
+        product.featuredimg,
+        JSON.stringify(product.sizeName),
+        product.productUrl,
+        JSON.stringify(product.imageUrl),
+        product.videoUrl,
+        product.availability,
+        product.productShortDescription,
+        product.catName,
+        product.productFetchedFrom,
+        Date.now()
+    ];
 
-            Date.now() // Add current timestamp for new products
-        ]);
-
-        // Get the last inserted row ID
-        const row = await DB.get(`SELECT last_insert_rowid() as lastID`);
-        const lastID = row.lastID;
-
-        if (!lastID) {
-            throw new Error('Failed to retrieve last inserted ID');
+    // Step 1: Insert into DB
+    DB.run(sql, values, function (err) {
+        if (err) {
+            console.error('❌ Error adding product to database:', err.message);
+            return callback(err);
         }
 
-        console.log('Inserted product with ID:', lastID);
-        return lastID;
-    } catch (error) {
-        console.error('Error adding product to database:', error.message);
-        throw error;
-    }
+        const lastID = this.lastID;
+        console.log('✅ Inserted product with ID:', lastID);
+
+        // Step 2: Return lastID via callback
+        return callback(null, lastID);
+    });
 }
+
+
 
 
 // Function to add many-to-many relationships
@@ -689,8 +684,10 @@ async function updateProduct(product) {
 
         console.log(`Row: ${JSON.stringify(row)}`);
 
+        let productId;
+
         if (row && row.length > 0) {
-            const productId = row[0].productId;
+            productId = row[0].productId;
             console.log(`Product ID: ${productId}`);
 
             // Step 2: Update all values where productId matches
@@ -698,7 +695,6 @@ async function updateProduct(product) {
             const updates = [];
             const values = [];
             console.log(updateQuery);
-
 
             if (typeof product.productPrice !== 'undefined') {
                 updates.push(`productPrice = ?`);
@@ -712,8 +708,6 @@ async function updateProduct(product) {
                 updates.push(`productOriginalPrice = ?`);
                 values.push(product.productOriginalPrice);
             }
-           
-
             if (typeof product.sizeName !== 'undefined') {
                 updates.push(`sizeName = ?`);
                 values.push(JSON.stringify(product.sizeName));
@@ -723,55 +717,59 @@ async function updateProduct(product) {
                 values.push(JSON.stringify(product.availability));
             }
 
-            // if (typeof product.productLastUpdated !== 'undefined') {
-            //     updates.push(`productLastUpdated = ?`);
-            //     values.push(product.productLastUpdated);
-            // } else {
-            //     updates.push(`productLastUpdated = ?`);
-            //     values.push(Date.now());
-            // }
             updates.push(`productLastUpdated = ?`);
             values.push(Date.now());
 
             // Check if there are fields to update
-            if (updates.length === 0) {
-                console.log("No fields to update.");
-                return;
-            }
+            if (updates.length > 0) {
+                const sql = updateQuery + updates.join(', ') + ` WHERE productId = ?`;
 
-            const sql = updateQuery + updates.join(', ') + ` WHERE productId = ?`;
+                try {
+                    const params = [...values, productId];
+                    console.log("Executing update query:", sql, params);
 
-            try {
-                const params = [...values, productId]
-                // const params = ['1500', '[45,48,50,52]', 1738772214590, 1]
-                console.log("Executing update query:", sql, [...values, productId]);
-                const stmt = DB.prepare(sql);
-                const result = stmt.run(...params);
+                    const changes = await new Promise((resolve, reject) => {
+                        const stmt = DB.prepare(sql);
+                        stmt.run(...params, function (err) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                resolve(this.changes);
+                            }
+                        });
+                        stmt.finalize();
+                    });
 
-                if (result.changes === 1) {
-                    console.log(JSON.stringify({ status: 200, message: `Data updated with id: ${productId}` }));
-                } else {
-                    console.log(JSON.stringify({ status: 201, message: `No data has been changed` }));
-                }
-            } catch (err) {
-                if (err.code === 'SQLITE_CONSTRAINT') {
-                    console.error({ code: 400, status: "Unique constraint failed", message: "A record with this unique value already exists." });
-                } else {
-                    console.error({ code: 500, status: "Internal Server Error", message: err.message });
+                    if (changes === 1) {
+                        console.log(JSON.stringify({ status: 200, message: `Data updated with id: ${productId}` }));
+                    } else {
+                        console.log(JSON.stringify({ status: 201, message: `No data has been changed` }));
+                    }
+                } catch (err) {
+                    if (err.code === 'SQLITE_CONSTRAINT') {
+                        console.error({ code: 400, status: "Unique constraint failed", message: "A record with this unique value already exists." });
+                    } else {
+                        console.error({ code: 500, status: "Internal Server Error", message: err.message });
+                    }
                 }
             }
         } else {
             console.log('No product found with the given URL.');
             console.log("Product uploaded");
 
-            const productId = await addProductToDatabase(product);
+            productId = await addProductToDatabase(product);
             await addProductRelationships(productId, product);
         }
 
+        // ✅ Return the productId in all cases
+        return productId;
+
     } catch (error) {
         console.error("Error in query:", error.message);
+        return null; // Return null if there was a failure
     }
 }
+
 
 
 
@@ -868,4 +866,7 @@ async function scrapeImages(page, url) {
 
 
 // Start the scraping process
-export { fetchDataa };
+export {
+    fetchDataa, addProductToDatabase,
+    updateProduct
+}; 

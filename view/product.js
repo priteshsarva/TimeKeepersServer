@@ -1,7 +1,11 @@
 import { log } from "console";
 import { DB } from "../connect.js";
 import express from "express";
+import { bulkSafeSyncProducts } from "../controller/wpBulkSafeSync.js";
+
 const product = express()
+
+
 
 // Import necessary modules
 import { promisify } from 'util';
@@ -124,6 +128,44 @@ product.get('/allresults', (req, res) => {
 
 });
 
+product.get("/bulkSafeSyncProducts", bulkSafeSyncProducts);
+
+
+product.get("/syncWP", async (req, res) => {
+    res.set("content-type", "application/json");
+
+    const sql = `SELECT * FROM PRODUCTS ORDER BY productDateCreation DESC;`;
+
+    try {
+        DB.all(sql, [], async (err, rows) => {
+            if (err) {
+                console.error("❌ DB fetch failed:", err);
+                return res.status(500).json({ code: 500, error: err.message });
+            }
+
+            console.log(`🚀 Found ${rows.length} products in database, syncing to WooCommerce...`);
+
+            let success = 0;
+            let failed = 0;
+
+            for (const product of rows) {
+                try {
+                    await upsertProduct(product);
+                    success++;
+                } catch (err) {
+                    console.error(`❌ Failed to sync product ${product.productName}:`, err);
+                    failed++;
+                }
+            }
+
+            console.log(`✅ Sync completed. Success: ${success}, Failed: ${failed}`);
+            res.json({ message: "Sync completed", success, failed });
+        });
+    } catch (err) {
+        console.error("❌ Unexpected sync error:", err);
+        res.status(500).json({ code: 500, error: err.message });
+    }
+});
 
 product.get('/all', (req, res) => {
     res.set('content-type', 'application/json');
@@ -253,6 +295,11 @@ product.get('/firstdata', (req, res) => {
         "Ladies Watch",
         "Luxury Watch",
     ];
+    // dont know where this code come from----------------------------------------------------
+    //  db.all("SELECT * FROM products WHERE productId = ?", ['sync-products'], (err, rows) => {
+    //     if (err) console.error(err);
+    //     else console.log(rows);
+    // });
 
     const itemsPerCategory = 30;
     const allPromises = categories.map(category => {
@@ -472,8 +519,8 @@ product.get('/set-luxury-watch-category', (req, res) => {
         WHERE productFetchedFrom IN (${placeholders})
     `;
 
-    
-    const params = [ ...targetSources];
+
+    const params = [...targetSources];
 
     console.log("Executing SQL:", updateSQL);
     console.log("With params:", params);
@@ -492,7 +539,6 @@ product.get('/set-luxury-watch-category', (req, res) => {
         });
     });
 });
-
 
 
 product.get('/results/', (req, res) => {
@@ -553,8 +599,6 @@ product.get('/:id', (req, res) => {
 });
 
 
-
-
 product.get('/total-pages', (req, res) => {
     const limit = parseInt(req.query.result) || 20;
 
@@ -580,9 +624,6 @@ product.get('/total-pages', (req, res) => {
         });
     });
 });
-
-
-
 
 
 product.post('/add', async (req, res) => {
@@ -811,5 +852,6 @@ product.delete('/delete', (req, res) => {
     }
 
 })
+
 
 export default product;
