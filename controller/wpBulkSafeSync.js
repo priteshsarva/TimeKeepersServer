@@ -254,7 +254,7 @@ export async function upsertProductSafe(product, productId = null) {
     const categoryId = !existing ? await getOrCreateCategory(product.catName) : null;
     // const brandId = !existing ? await getOrCreateBrand(product.productBrand) : null;  //use while creating new
     // const brandId = existing ? await getOrCreateBrand(product.productBrand) : null;  //used while i was doing bulk update
-    const brandId = await getOrCreateBrand(product.productBrand) ;  //used while i was doing bulk update from devupdate
+    const brandId = await getOrCreateBrand(product.productBrand);  //used while i was doing bulk update from devupdate
 
     let images = [];
     try {
@@ -264,12 +264,13 @@ export async function upsertProductSafe(product, productId = null) {
       if (product.featuredimg) images.push({ src: product.featuredimg });
     }
 
-    const regularPrice = ((product.productOriginalPrice || 0) + 1200).toString();
+    const regularPrice = ((Number(product.productOriginalPrice) || 0) + 1200).toString()
 
     // ✅ Base payload
     const payload = {
       name: product.productName,
       type: "simple",
+      regular_price: regularPrice,
       sku,
       description: product.productDescription || "",
       short_description: product.productShortDescription || "",
@@ -284,18 +285,21 @@ export async function upsertProductSafe(product, productId = null) {
         { key: "featuredimg", value: product.featuredimg },
         { key: "imageUrl", value: product.imageUrl },
         { key: "productBrand", value: product.productBrand },
-        { key: "productLastUpdated", value: product.productLastUpdated },
-        { key: "productDateCreation", value: product.productDateCreation },
+        { key: "productLastUpdated", value: product.productLastUpdated || Date.now() },
         { key: "productShortDescription", value: product.productShortDescription },
         { key: "productDescription", value: product.productDescription },
       ],
     };
 
 
-
     // ✅ Add price, category & brand only for new products
     if (!existing) {
       payload.regular_price = regularPrice;
+
+      payload.meta_data.push({
+        key: "productDateCreation",
+        value: Date.now(),
+      });
 
       if (categoryId) payload.categories = [{ id: categoryId }];
 
