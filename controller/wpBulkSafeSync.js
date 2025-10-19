@@ -285,7 +285,7 @@ export async function upsertProductSafe(product, productId = null) {
         { key: "featuredimg", value: product.featuredimg },
         { key: "imageUrl", value: product.imageUrl }, //add just for bulkupdated from server maually
 
-        // check it later dont miss this
+        // check it later dont miss this make this for videoUrl also
         // {
         //   key: "imageUrl", value: product.imageUrl || (existing.meta_data?.find(m => m.key === "imageUrl")?.value || "")
         // },
@@ -311,6 +311,11 @@ export async function upsertProductSafe(product, productId = null) {
       payload.meta_data.push({
         key: "imageUrl",
         value: product.imageUrl,
+      });
+
+      payload.meta_data.push({
+        key: "videoUrl",
+        value: product.videoUrl || "",
       });
 
       if (categoryId) payload.categories = [{ id: categoryId }];
