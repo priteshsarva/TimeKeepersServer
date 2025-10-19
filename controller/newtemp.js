@@ -12,6 +12,7 @@ import { exec } from 'child_process';
 import { humanizePage, humanType } from './humanize.js';
 import { log } from 'console';
 import { upsertProductSafe } from './wpBulkSafeSync.js'
+import { updateProductCategory } from './updateProductCategoryAndBrand.js';
 
 // const baseUrls = ['https://oneshoess.cartpe.in', 'https://reseller-store.cartpe.in'];
 // const baseUrls = ['https://oneshoess.cartpe.in'];
@@ -337,6 +338,9 @@ async function scrapeProducts(page, categories, baseUrl) {
         try {
             console.log("from try block");
             for (const eachproduct of catProductss) {
+                console.log("eachproduct");
+                updateProductCategory(eachproduct);
+                console.log("eachproduct");
                 const productId = await updateProduct(eachproduct);
                 await upsertProductSafe(eachproduct, productId);
                 console.log("From Each Product");

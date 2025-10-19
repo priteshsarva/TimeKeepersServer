@@ -283,7 +283,14 @@ export async function upsertProductSafe(product, productId = null) {
         { key: "availability", value: product.availability ? "instock" : "outofstock" },
         { key: "productOriginalPrice", value: product.productOriginalPrice },
         { key: "featuredimg", value: product.featuredimg },
-        { key: "imageUrl", value: product.imageUrl },
+        { key: "imageUrl", value: product.imageUrl }, //add just for bulkupdated from server maually
+
+        // check it later dont miss this
+        // {
+        //   key: "imageUrl", value: product.imageUrl || (existing.meta_data?.find(m => m.key === "imageUrl")?.value || "")
+        // },
+
+
         { key: "productBrand", value: product.productBrand },
         { key: "productLastUpdated", value: product.productLastUpdated || Date.now() },
         { key: "productShortDescription", value: product.productShortDescription },
@@ -299,6 +306,11 @@ export async function upsertProductSafe(product, productId = null) {
       payload.meta_data.push({
         key: "productDateCreation",
         value: Date.now(),
+      });
+
+      payload.meta_data.push({
+        key: "imageUrl",
+        value: product.imageUrl,
       });
 
       if (categoryId) payload.categories = [{ id: categoryId }];
