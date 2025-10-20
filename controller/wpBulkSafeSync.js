@@ -279,15 +279,19 @@ export async function upsertProductSafe(product, productId = null) {
       meta_data: [
         { key: "productFetchedFrom", value: product.productFetchedFrom },
         { key: "productUrl", value: product.productUrl },
-        { key: "videoUrl", value: product.videoUrl || "" },
         { key: "availability", value: product.availability ? "instock" : "outofstock" },
         { key: "productOriginalPrice", value: product.productOriginalPrice },
         { key: "featuredimg", value: product.featuredimg },
+
+        { key: "videoUrl", value: product.videoUrl || "" },  //add just for bulkupdated from server maually
         { key: "imageUrl", value: product.imageUrl }, //add just for bulkupdated from server maually
 
         // check it later dont miss this make this for videoUrl also
         // {
         //   key: "imageUrl", value: product.imageUrl || (existing.meta_data?.find(m => m.key === "imageUrl")?.value || "")
+        // },
+        // {
+        //   key: "videoUrl", value: product.videoUrl || (existing.meta_data?.find(m => m.key === "videoUrl")?.value || "")
         // },
 
 
