@@ -338,11 +338,13 @@ async function scrapeProducts(page, categories, baseUrl) {
         try {
             console.log("from try block");
             for (const eachproduct of catProductss) {
-                console.log("eachproduct");
                 updateProductCategory(eachproduct);
-                console.log("eachproduct");
-                const productId = await updateProduct(eachproduct);
-                await upsertProductSafe(eachproduct, productId);
+                const { productId, skipforwordpress } = await updateProduct(eachproduct);
+                if (!skipforwordpress) {
+                    await upsertProductSafe(eachproduct, productId);
+                } else {
+                    console.log("Skipped upsertProductSafe due to WordPress flag.");
+                }
                 console.log("From Each Product");
             }
             products.push(...catProductss)
@@ -666,10 +668,25 @@ async function relationToBrand(productId, product) {
 
 // Function to handle "View More" button clicks
 
+function toBoolean(val) {
+    if (val === true || val === "true" || val === 1 || val === "1") {
+        return true;
+    }
+    if (val === false || val === "false" || val === 0 || val === "0") {
+        return false;
+    }
+    console.warn("Unrecognized boolean-like value:", val);
+    return false; // or throw error
+}
+
+
+
 async function updateProduct(product) {
     console.log('from updateProduct');
+    let skipforwordpress = false;
 
     const query = `SELECT * FROM PRODUCTS WHERE productUrl = ?`;
+
 
     try {
         // Step 1: Select the productId based on the productUrl
@@ -717,6 +734,9 @@ async function updateProduct(product) {
                 values.push(JSON.stringify(product.sizeName));
             }
             if (typeof product.availability !== 'undefined') {
+                if (toBoolean(product.availability) === toBoolean(row[0].availability)) {
+                    skipforwordpress = true;
+                }
                 updates.push(`availability = ?`);
                 values.push(JSON.stringify(product.availability));
             }
@@ -766,11 +786,16 @@ async function updateProduct(product) {
         }
 
         // ✅ Return the productId in all cases
-        return productId;
-
+        return {
+            productId: productId,
+            skipforwordpress: skipforwordpress
+        };
     } catch (error) {
         console.error("Error in query:", error.message);
-        return null; // Return null if there was a failure
+        return {
+            productId: null,
+            skipforwordpress: null
+        }; // Return null if there was a failure
     }
 }
 
