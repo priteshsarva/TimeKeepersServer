@@ -220,6 +220,7 @@ async function getOrCreateBrand(brandName) {
 }
 
 export async function upsertProductSafe(product, productId = null) {
+  
 
   try {
     const sku = (productId ?? product.productId)?.toString()
@@ -280,11 +281,11 @@ export async function upsertProductSafe(product, productId = null) {
         { key: "productFetchedFrom", value: product.productFetchedFrom },
         { key: "productUrl", value: product.productUrl },
         { key: "availability", value: product.availability ? "instock" : "outofstock" },
-        { key: "productOriginalPrice", value: product.productOriginalPrice },
-        { key: "featuredimg", value: product.featuredimg },
+        // { key: "productOriginalPrice", value: product.productOriginalPrice },
+        { key: "featuredimg", value: product.featuredimg.replace("gallery_sm", "gallery_md") },
 
-        { key: "videoUrl", value: product.videoUrl || "" },  //add just for bulkupdated from server maually
-        { key: "imageUrl", value: product.imageUrl }, //add just for bulkupdated from server maually
+        // { key: "videoUrl", value: product.videoUrl || "" },  //add just for bulkupdated from server maually
+        // { key: "imageUrl", value: product.imageUrl }, //add just for bulkupdated from server maually
 
         // check it later dont miss this make this for videoUrl also
         // {
@@ -383,7 +384,7 @@ export async function bulkSafeSyncProducts(req, res) {
     console.log(`📦 Found ${rows.length} products to sync.`);
 
     const batchSize = 5;
-    const delayMs = 1500;
+    const delayMs = 250;
 
     for (let i = 0; i < rows.length; i += batchSize) {
       const batch = rows.slice(i, i + batchSize);
