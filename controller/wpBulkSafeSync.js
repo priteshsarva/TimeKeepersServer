@@ -220,7 +220,7 @@ async function getOrCreateBrand(brandName) {
 }
 
 export async function upsertProductSafe(product, productId = null) {
-  
+
 
   try {
     const sku = (productId ?? product.productId)?.toString()
@@ -307,11 +307,11 @@ export async function upsertProductSafe(product, productId = null) {
     // ✅ Add price, category & brand only for new products
     if (!existing) {
       payload.regular_price = regularPrice;
-
-      payload.meta_data.push({
-        key: "productDateCreation",
-        value: Date.now(),
-      });
+      payload.sku,
+        payload.meta_data.push({
+          key: "productDateCreation",
+          value: Date.now(),
+        });
 
       payload.meta_data.push({
         key: "imageUrl",
