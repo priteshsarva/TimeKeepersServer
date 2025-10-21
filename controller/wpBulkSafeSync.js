@@ -318,7 +318,7 @@ export async function upsertProductSafe(product, productId = null) {
       });
       payload.meta_data.push({
         key: "imageUrl",
-        value: product.imageUrl,
+        value: product.imageUrl.replace("gallery_sm", "gallery_md"),
       });
 
       payload.meta_data.push({
