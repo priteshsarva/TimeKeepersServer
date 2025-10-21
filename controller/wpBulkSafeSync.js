@@ -281,7 +281,7 @@ export async function upsertProductSafe(product, productId = null) {
         { key: "productFetchedFrom", value: product.productFetchedFrom },
         { key: "productUrl", value: product.productUrl },
         { key: "availability", value: product.availability ? "instock" : "outofstock" },
-        // { key: "productOriginalPrice", value: product.productOriginalPrice },
+        { key: "productOriginalPrice", value: product.productOriginalPrice },
         { key: "featuredimg", value: product.featuredimg.replace("gallery_sm", "gallery_md") },
 
         // { key: "videoUrl", value: product.videoUrl || "" },  //add just for bulkupdated from server maually
@@ -312,7 +312,10 @@ export async function upsertProductSafe(product, productId = null) {
           key: "productDateCreation",
           value: Date.now(),
         });
-
+      payload.meta_data.push({
+        key: "productOriginalPrice",
+        value: product.productOriginalPrice,
+      });
       payload.meta_data.push({
         key: "imageUrl",
         value: product.imageUrl,
