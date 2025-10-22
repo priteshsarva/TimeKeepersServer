@@ -20,6 +20,7 @@ import productBrand from "./view/productBrand.js";
 import { baseUrls } from "./baseUrls.js";
 import fs from 'fs';
 import cors from 'cors';
+import { fixBrandsFromMap } from "./controller/wpBulkSafeSync.js";
 // const PORT = process.env.PORT || 5000;
 const PORT = 80; // Force port 80 for production behind Cloudflare
 
@@ -168,6 +169,11 @@ app.get('/devproductupdates', (req, res) => {
 
 })
 
+app.get('/updatebrand', (req, res) => {
+    fixBrandsFromMap();
+    res.status(200).json({ status: 200, message: `working` });
+
+})
 
 app.listen(PORT, (err) => {
     if (err) {

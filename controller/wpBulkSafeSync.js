@@ -3,6 +3,7 @@ import fetch from "node-fetch";
 import "dotenv/config";
 import { DB } from "../connect.js";
 import { log } from "console";
+import { brandMap } from "./updateProductCategoryAndBrand.js";
 
 const WP_URL = process.env.WP_URL;
 const WP_CONSUMER_KEY = process.env.WP_CONSUMER_KEY;
@@ -176,6 +177,8 @@ async function getProductBySKU(sku) {
 //     console.error("❌ Unexpected error:", err);
 //   }
 // }
+
+
 
 
 
@@ -406,3 +409,97 @@ export async function bulkSafeSyncProducts(req, res) {
     res.status(500).send({ error: err.message });
   }
 }
+
+
+
+
+
+// ---------------- FIX BRAND HIERARCHY USING brandMap ----------------
+export async function fixBrandsFromMap() {
+  console.log("🔄 Fixing brands hierarchy from brandMap...");
+
+  try {
+    for (const [parentName, subbrands] of Object.entries(brandMap)) {
+      let parentId = null;
+
+      // 1️⃣ Ensure parent brand exists
+      const parentSearchRes = await fetch(`${WP_URL}/wp-json/wp/v2/product_brand?search=${encodeURIComponent(parentName)}`, {
+        headers: { Authorization: getAuthHeader() },
+      });
+      const parentData = await parentSearchRes.json();
+
+      parentId = parentData.find(b => b.name.toLowerCase() === parentName.toLowerCase())?.id || null;
+
+      if (!parentId) {
+        const createParentRes = await fetch(`${WP_URL}/wp-json/wp/v2/product_brand`, {
+          method: "POST",
+          headers: {
+            Authorization: getAuthHeader(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: parentName }),
+        });
+        const parent = await createParentRes.json();
+        if (createParentRes.ok) {
+          parentId = parent.id;
+          console.log(`🆕 Created parent brand: ${parentName} (ID: ${parentId})`);
+        } else {
+          console.error("❌ Failed to create parent brand:", parent);
+          continue;
+        }
+      } else {
+        console.log(`✅ Parent brand exists: ${parentName} (ID: ${parentId})`);
+      }
+
+      // 2️⃣ Loop through subbrands
+      for (const subName of subbrands) {
+        try {
+          const subSearchRes = await fetch(`${WP_URL}/wp-json/wp/v2/product_brand?search=${encodeURIComponent(subName)}`, {
+            headers: { Authorization: getAuthHeader() },
+          });
+          const subData = await subSearchRes.json();
+
+          // Find exact match
+          const exactSub = subData.find(b => b.name.toLowerCase() === subName.toLowerCase());
+
+          if (exactSub) {
+            // Force update parent
+            const updateRes = await fetch(`${WP_URL}/wp-json/wp/v2/product_brand/${exactSub.id}`, {
+              method: "PUT",
+              headers: {
+                Authorization: getAuthHeader(),
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ parent: parentId }),
+            });
+            const updated = await updateRes.json();
+            if (updateRes.ok) console.log(`🔄 Updated parent for subbrand '${subName}' → '${parentName}'`);
+            else console.error("❌ Failed to update subbrand parent:", updated);
+          } else {
+            // Create subbrand under parent
+            const createSubRes = await fetch(`${WP_URL}/wp-json/wp/v2/product_brand`, {
+              method: "POST",
+              headers: {
+                Authorization: getAuthHeader(),
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name: subName, parent: parentId }),
+            });
+            const newSub = await createSubRes.json();
+            if (createSubRes.ok) console.log(`🆕 Created subbrand '${subName}' under '${parentName}'`);
+            else console.error("❌ Failed to create subbrand:", newSub);
+          }
+        } catch (err) {
+          console.error(`❌ Error processing subbrand '${subName}':`, err);
+        }
+      }
+    }
+
+    console.log("🎉 Brand hierarchy updated successfully!");
+  } catch (err) {
+    console.error("❌ Error fixing brands from brandMap:", err);
+  }
+}
+
+
+
