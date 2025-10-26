@@ -269,6 +269,9 @@ export async function upsertProductSafe(product, productId = null) {
     }
 
     const regularPrice = ((Number(product.productOriginalPrice) || 0) + 1200).toString()
+    const stock_status = (product.availability === 1 || product.availability === true)
+      ? "instock"
+      : "outofstock";
 
     // ✅ Base payload
     const payload = {
@@ -278,12 +281,12 @@ export async function upsertProductSafe(product, productId = null) {
       sku,
       description: product.productDescription || "",
       short_description: product.productShortDescription || "",
-      stock_status: product.availability ? "instock" : "outofstock",
+      stock_status,
       brands: [{ id: brandId }], // for temp
       meta_data: [
         { key: "productFetchedFrom", value: product.productFetchedFrom },
         { key: "productUrl", value: product.productUrl },
-        { key: "availability", value: product.availability ? "instock" : "outofstock" },
+        { key: "availability", value: product.availability },
         { key: "productOriginalPrice", value: product.productOriginalPrice },
         { key: "featuredimg", value: product.featuredimg.replace("gallery_sm", "gallery_md") },
 
