@@ -269,10 +269,19 @@ export async function upsertProductSafe(product, productId = null) {
     }
 
     const regularPrice = ((Number(product.productOriginalPrice) || 0) + 1200).toString()
-    const stock_status = (product.availability === 1 || product.availability === true)
-      ? "instock"
-      : "outofstock";
+    // const stock_status = (product.availability === 1 || product.availability === true)
+    //   ? "instock"
+    //   : "outofstock";
 
+    const isAvailable = (
+      product.availability === true ||
+      product.availability === 1 ||
+      product.availability === "1" ||
+      product.availability === "true"
+    );
+    
+    const stock_status = isAvailable ? "instock" : "outofstock";
+    
     // ✅ Base payload
     const payload = {
       name: product.productName,
