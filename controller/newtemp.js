@@ -444,18 +444,35 @@ function addProductToDatabase(product, callback) {
     ];
 
     // Step 1: Insert into DB
-    DB.run(sql, values, function (err) {
-        if (err) {
-            console.error('❌ Error adding product to database:', err.message);
-            return callback(err);
-        }
+    //  DB.run(sql, values, function (err) {
+    //       if (err) {
+    //          console.error('❌ Error adding product to database:', err.message);
+    //          return callback(err);
+    //       }
+    //     const lastID = this.lastID;
+    //     console.log('✅ Inserted product with ID:', lastID);
+    //
+    //     // Step 2: Return lastID via callback
+    //     return callback(null, lastID);
+    //  });
 
-        const lastID = this.lastID;
-        console.log('✅ Inserted product with ID:', lastID);
-
-        // Step 2: Return lastID via callback
-        return callback(null, lastID);
+    // ✅ Return a Promise so we can `await` this function
+    return new Promise((resolve, reject) => {
+        DB.run(sql, values, function (err) {
+            if (err) {
+                console.error('❌ Error adding product to database:', err.message);
+                reject(err);
+            } else {
+                const lastID = this.lastID;
+                console.log('✅ Inserted product with ID:', lastID);
+                resolve(lastID); // <-- ✅ return lastID to caller
+            }
+        });
     });
+
+
+
+
 }
 
 
@@ -716,7 +733,28 @@ async function updateProduct(product) {
             let updateQuery = 'UPDATE PRODUCTS SET ';
             const updates = [];
             const values = [];
-            console.log(updateQuery);
+            // console.log(updateQuery);
+
+            // Compare important fields
+            //         const fieldsToCheck = {
+            //            productOriginalPrice: product.productOriginalPrice,
+            //             sizeName: JSON.stringify(product.sizeName),
+            //             availability: JSON.stringify(product.availability),
+            //         };
+
+            // Determine if there are any differences
+            //        const hasChanges = Object.entries(fieldsToCheck).some(([key, val]) => {
+            //            return val !== JSON.stringify(existing[key]);
+            //       });
+
+            //     if (!hasChanges) {
+            //         skipforwordpress = true; // nothing to update
+            //          console.log(`⏭ No changes for ${product.productName}`);
+            //         return { productId, skipforwordpress };
+            //    }
+            // Compare important fields ends here
+
+
 
             if (typeof product.productPrice !== 'undefined') {
                 updates.push(`productPrice = ?`);

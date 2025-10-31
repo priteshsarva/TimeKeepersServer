@@ -382,11 +382,13 @@ export async function bulkSafeSyncProducts(req, res) {
     const rows = await new Promise((resolve, reject) => {
       const currentTimestamp = Date.now(); // Current timestamp in milliseconds
       // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
-      const twelveAndHalfHoursAgo = currentTimestamp - 1000 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
+      const twelveAndHalfHoursAgo = currentTimestamp - 12.5 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
 
 
       DB.all(
         "SELECT * FROM PRODUCTS WHERE productLastUpdated >= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
+        // "SELECT * FROM PRODUCTS WHERE productId = 34809;",
+
         // [oneDayAgo],
         [twelveAndHalfHoursAgo],
         (err, result) => {
