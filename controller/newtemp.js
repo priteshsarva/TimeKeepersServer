@@ -435,13 +435,18 @@ function addProductToDatabase(product, callback) {
         JSON.stringify(product.sizeName),
         product.productUrl,
         JSON.stringify(product.imageUrl),
-        product.videoUrl,
+        product.videoUrl ?? null,
         product.availability,
         product.productShortDescription,
         product.catName,
         product.productFetchedFrom,
         Date.now()
     ];
+
+    console.log('⚙️ Running SQL insert now...');
+    console.log('➡️ SQL:', sql);
+    console.log('➡️ Values:', values);
+
 
     // Step 1: Insert into DB
     //  DB.run(sql, values, function (err) {
@@ -469,9 +474,6 @@ function addProductToDatabase(product, callback) {
             }
         });
     });
-
-
-
 
 }
 
@@ -821,6 +823,7 @@ async function updateProduct(product) {
             console.log("Product uploaded");
 
             productId = await addProductToDatabase(product);
+            console.log("addProductToDatabase Completed")
             await addProductRelationships(productId, product);
         }
 
