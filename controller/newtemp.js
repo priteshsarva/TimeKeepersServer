@@ -461,6 +461,10 @@ function addProductToDatabase(product, callback) {
     //     return callback(null, lastID);
     //  });
 
+    console.log('🧠 DB object type:', typeof DB);
+    console.log('🧠 Has run method?', typeof DB.run);
+
+
     // ✅ Return a Promise so we can `await` this function
     return new Promise((resolve, reject) => {
         DB.run(sql, values, function (err) {
