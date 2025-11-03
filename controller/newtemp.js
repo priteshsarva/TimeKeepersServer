@@ -467,7 +467,11 @@ function addProductToDatabase(product, callback) {
 
     // ✅ Return a Promise so we can `await` this function
     return new Promise((resolve, reject) => {
+
+        console.log("from Promise")
+
         DB.run(sql, values, function (err) {
+            console.log("from db run")
             if (err) {
                 console.error('❌ Error adding product to database:', err.message);
                 reject(err);
