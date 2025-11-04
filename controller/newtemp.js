@@ -417,7 +417,7 @@ async function scrapeProducts(page, categories, baseUrl) {
 
 
 
-function addProductToDatabase(product, callback) {
+async function addProductToDatabase(product, callback) {
     console.log("from add product");
     console.log(product);
 
@@ -465,23 +465,58 @@ function addProductToDatabase(product, callback) {
     console.log('🧠 Has run method?', typeof DB.run);
 
 
-    // ✅ Return a Promise so we can `await` this function
-    return new Promise((resolve, reject) => {
-
-        console.log("from Promise")
-
+    const lastID = await new Promise((resolve, reject) => {
         DB.run(sql, values, function (err) {
-            console.log("from db run")
-            if (err) {
-                console.error('❌ Error adding product to database:', err.message);
-                reject(err);
-            } else {
-                const lastID = this.lastID;
-                console.log('✅ Inserted product with ID:', lastID);
-                resolve(lastID); // <-- ✅ return lastID to caller
-            }
+            if (err) return reject(err);
+            resolve(this.lastID); // ✅ Always gives correct inserted row ID
         });
     });
+
+
+    // Execute the INSERT query
+    //   await DB.run(sql, [
+    //        product.productName,
+    //        product.productOriginalPrice,
+    //        product.productBrand,
+    //        product.featuredimg,
+    //        JSON.stringify(product.sizeName),
+    //       product.productUrl,
+    //       JSON.stringify(product.imageUrl),
+    //       product.productShortDescription,
+    //       product.catName,
+    //       product.productFetchedFrom,
+    //       Date.now() // Add current timestamp for new products
+    //   ]);
+
+    // Get the last inserted row ID
+   // const row = await DB.get(`SELECT last_insert_rowid() as lastID`);
+    // const lastID = row.lastID;
+
+    if (!lastID) {
+        throw new Error('Failed to retrieve last inserted ID');
+    }
+
+    console.log('Inserted product with ID:', lastID);
+    return lastID;
+
+
+    // ✅ Return a Promise so we can `await` this function
+    // return new Promise((resolve, reject) => {
+
+    //    console.log("from Promise")
+
+    //    DB.run(sql, values, function (err) {
+    //        console.log("from db run")
+    //      if (err) {
+    //        console.error('❌ Error adding product to database:', err.message);
+    //      reject(err);
+    //          } else {
+    //            const lastID = this.lastID;
+    //          console.log('✅ Inserted product with ID:', lastID);
+    //        resolve(lastID); // <-- ✅ return lastID to caller
+    //  }
+    //     });
+    // });
 
 }
 
