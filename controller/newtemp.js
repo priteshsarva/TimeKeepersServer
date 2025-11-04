@@ -341,7 +341,7 @@ async function scrapeProducts(page, categories, baseUrl) {
             for (const eachproduct of catProductss) {
                 updateProductCategory(eachproduct);
                 const { productId, skipforwordpress } = await updateProduct(eachproduct);
-                if (skipforwordpress) {
+                if (!skipforwordpress) {
                     console.log(`upsertProductSafe with id=${productId} `)
                     await upsertProductSafe(eachproduct, productId);
                 } else {
@@ -810,6 +810,7 @@ async function updateProduct(product) {
                 values.push(JSON.stringify(product.sizeName));
             }
             if (typeof product.availability !== 'undefined') {
+                console.log("product.availability found")
                 if (toBoolean(product.availability) === toBoolean(row[0].availability)) {
                     skipforwordpress = true;
                 } else {
