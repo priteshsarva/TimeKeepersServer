@@ -465,11 +465,24 @@ async function addProductToDatabase(product, callback) {
     console.log('🧠 Has run method?', typeof DB.run);
 
 
+    // const lastID = await new Promise((resolve, reject) => {
+    // DB.run(sql, values, function (err) {
+    // if (err) return reject(err);
+    // resolve(this.lastID); // ✅ Always gives correct inserted row ID
+    // });
+    // });
+
+
     const lastID = await new Promise((resolve, reject) => {
-        DB.run(sql, values, function (err) {
-            if (err) return reject(err);
-            resolve(this.lastID); // ✅ Always gives correct inserted row ID
+        const stmt = DB.prepare(sql);
+        stmt.run(...values, function (err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(this.lastID); // ✅ always gives the correct inserted row ID
+            }
         });
+        stmt.finalize();
     });
 
 
@@ -489,7 +502,7 @@ async function addProductToDatabase(product, callback) {
     //   ]);
 
     // Get the last inserted row ID
-   // const row = await DB.get(`SELECT last_insert_rowid() as lastID`);
+    // const row = await DB.get(`SELECT last_insert_rowid() as lastID`);
     // const lastID = row.lastID;
 
     if (!lastID) {
@@ -798,12 +811,12 @@ async function updateProduct(product) {
             if (typeof product.availability !== 'undefined') {
                 if (toBoolean(product.availability) === toBoolean(row[0].availability)) {
                     skipforwordpress = true;
-                }else{
+                } else {
                     updates.push(`availability = ?`);
                     values.push(JSON.stringify(product.availability));
                     skipforwordpress = false;
                 }
-                
+
             }
 
             updates.push(`productLastUpdated = ?`);
