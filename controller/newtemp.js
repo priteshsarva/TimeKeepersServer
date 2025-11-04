@@ -746,7 +746,7 @@ function toBoolean(val) {
 
 async function updateProduct(product) {
     console.log('from updateProduct');
-    let skipforwordpress = false;
+    let skipforwordpress = true;
 
     const query = `SELECT * FROM PRODUCTS WHERE productUrl = ?`;
 
@@ -778,28 +778,6 @@ async function updateProduct(product) {
             let updateQuery = 'UPDATE PRODUCTS SET ';
             const updates = [];
             const values = [];
-            // console.log(updateQuery);
-
-            // Compare important fields
-            //         const fieldsToCheck = {
-            //            productOriginalPrice: product.productOriginalPrice,
-            //             sizeName: JSON.stringify(product.sizeName),
-            //             availability: JSON.stringify(product.availability),
-            //         };
-
-            // Determine if there are any differences
-            //        const hasChanges = Object.entries(fieldsToCheck).some(([key, val]) => {
-            //            return val !== JSON.stringify(existing[key]);
-            //       });
-
-            //     if (!hasChanges) {
-            //         skipforwordpress = true; // nothing to update
-            //          console.log(`⏭ No changes for ${product.productName}`);
-            //         return { productId, skipforwordpress };
-            //    }
-            // Compare important fields ends here
-
-
 
             if (typeof product.productPrice !== 'undefined') {
                 updates.push(`productPrice = ?`);
@@ -820,9 +798,12 @@ async function updateProduct(product) {
             if (typeof product.availability !== 'undefined') {
                 if (toBoolean(product.availability) === toBoolean(row[0].availability)) {
                     skipforwordpress = true;
+                }else{
+                    updates.push(`availability = ?`);
+                    values.push(JSON.stringify(product.availability));
+                    skipforwordpress = false;
                 }
-                updates.push(`availability = ?`);
-                values.push(JSON.stringify(product.availability));
+                
             }
 
             updates.push(`productLastUpdated = ?`);
@@ -866,6 +847,7 @@ async function updateProduct(product) {
             console.log("Product uploaded");
 
             productId = await addProductToDatabase(product);
+            skipforwordpress = false;
             console.log("addProductToDatabase Completed")
             await addProductRelationships(productId, product);
         }
@@ -879,7 +861,7 @@ async function updateProduct(product) {
         console.error("Error in query:", error.message);
         return {
             productId: null,
-            skipforwordpress: null
+            skipforwordpress: true
         }; // Return null if there was a failure
     }
 }
