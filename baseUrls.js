@@ -1,6 +1,4 @@
 const baseUrls = [
-   "https://awwaltime11.cartpe.in/",
-   "https://watchhouse11.cartpe.in/",
    "https://jilaniwatches11.cartpe.in/",
    "https://saenterprise.cartpe.in/",
    "https://thetimekeepers.cartpe.in/",
@@ -26,6 +24,8 @@ const baseUrls = [
    "https://watchclub.cartpe.in/",
    "https://watchcultures.cartpe.in/",
    "https://bismiwatches.cartpe.in/",
+   "https://awwaltime11.cartpe.in/",
+   "https://watchhouse11.cartpe.in/",
    // Luxury watch
    "https://wristifyreseller.cartpe.in/",
    "https://watchfactorys.cartpe.in/",
