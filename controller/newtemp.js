@@ -342,10 +342,10 @@ async function scrapeProducts(page, categories, baseUrl) {
                 updateProductCategory(eachproduct);
                 const { productId, skipforwordpress } = await updateProduct(eachproduct);
                 if (!skipforwordpress) {
+                    console.log(`Skipped upsertProductSafe due to WordPress flag. ProductID = ${productId}}`);
+                } else {
                     console.log(`upsertProductSafe with id=${productId} `)
                     await upsertProductSafe(eachproduct, productId);
-                } else {
-                    console.log("Skipped upsertProductSafe due to WordPress flag.");
                 }
                 console.log("From Each Product");
             }
@@ -760,7 +760,7 @@ function toBoolean(val) {
 
 async function updateProduct(product) {
     console.log('from updateProduct');
-    let skipforwordpress = true;
+    let skipforwordpress = false;
 
     const query = `SELECT * FROM PRODUCTS WHERE productUrl = ?`;
 
@@ -876,7 +876,7 @@ async function updateProduct(product) {
         console.error("Error in query:", error.message);
         return {
             productId: null,
-            skipforwordpress: true
+            skipforwordpress: null
         }; // Return null if there was a failure
     }
 }
@@ -921,7 +921,7 @@ async function scrapeImages(page, url) {
             });
         });
 
-        console.log(`Row: ${JSON.stringify(row)}`);
+        // console.log(`Row: ${JSON.stringify(row)}`);
 
         if (row && row.length > 0) {
             console.log("product alredy exist");

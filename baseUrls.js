@@ -1,4 +1,11 @@
 const baseUrls = [
+   // Luxury watch
+   "https://wristifyreseller.cartpe.in/",
+   "https://watchfactorys.cartpe.in/",
+   "https://watchkart.cartpe.in/",
+   "https://timepiece.cartpe.in/",
+   "https://hypewrist.cartpe.in/",
+
    "https://jilaniwatches11.cartpe.in/",
    "https://saenterprise.cartpe.in/",
    "https://thetimekeepers.cartpe.in/",
@@ -26,13 +33,6 @@ const baseUrls = [
    "https://bismiwatches.cartpe.in/",
    "https://awwaltime11.cartpe.in/",
    "https://watchhouse11.cartpe.in/",
-   // Luxury watch
-   "https://wristifyreseller.cartpe.in/",
-   "https://watchfactorys.cartpe.in/",
-   "https://watchkart.cartpe.in/",
-   "https://timepiece.cartpe.in/",
-   "https://hypewrist.cartpe.in/",
-
 ];
 
 
