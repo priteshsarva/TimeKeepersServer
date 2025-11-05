@@ -279,9 +279,9 @@ export async function upsertProductSafe(product, productId = null) {
       product.availability === "1" ||
       product.availability === "true"
     );
-    
+
     const stock_status = isAvailable ? "instock" : "outofstock";
-    
+
     // ✅ Base payload
     const payload = {
       name: product.productName,
@@ -333,7 +333,7 @@ export async function upsertProductSafe(product, productId = null) {
       });
       payload.meta_data.push({
         key: "imageUrl",
-        value: product.imageUrl.replace("gallery_sm", "gallery_md"),
+        value: stringify(product.imageUrl || "").replace("gallery_sm", "gallery_md"),
       });
 
       payload.meta_data.push({
