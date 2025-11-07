@@ -333,7 +333,7 @@ export async function upsertProductSafe(product, productId = null) {
       });
       payload.meta_data.push({
         key: "imageUrl",
-        value: stringify(product.imageUrl || "").replace("gallery_sm", "gallery_md"),
+        value: JSON.stringify(product.imageUrl || "").replace("gallery_sm", "gallery_md"),
       });
 
       payload.meta_data.push({
