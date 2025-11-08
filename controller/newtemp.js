@@ -174,7 +174,7 @@ async function fetchDataa(baseUrls) {
     // Use a for...of loop to handle asynchronous operations
     // const baseUrlsPath = "../baseUrls.js";
     const baseUrlsPath = path.resolve(__dirname, "../baseUrls.js");
-    console.log(baseUrlsPath);
+    // console.log(baseUrlsPath);
     for (let i = 0; i < baseUrls.length; i++) {
         const url = baseUrls[0];
         const fullUrl = `${url}/allcategory.html`;

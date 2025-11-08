@@ -113,22 +113,13 @@ app.get('/updateserver', async (req, res) => {
             }
             console.log('✅ Changes committed.');
 
-            // Step 3: Pull before pushing to avoid remote conflicts
-            exec('git pull --rebase', (err, stdout, stderr) => {
+            // Step 4: Push to remote
+            exec('git push', (err) => {
                 if (err) {
-                    console.error('❌ Error pulling from remote:', stderr || err);
+                    console.error('❌ Error pushing to remote:', err);
                     return;
                 }
-                console.log('✅ Pulled latest changes from remote.');
-
-                // Step 4: Push to remote
-                exec('git push', (err) => {
-                    if (err) {
-                        console.error('❌ Error pushing to remote:', err);
-                        return;
-                    }
-                    console.log('✅ Changes pushed to remote repository.');
-                });
+                console.log('✅ Changes pushed to remote repository.');
             });
         });
     });
