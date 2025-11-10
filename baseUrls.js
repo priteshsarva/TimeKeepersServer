@@ -1,12 +1,4 @@
 const baseUrls = [
-   "https://watchstore17.cartpe.in/",
-   "https://city-watch19.cartpe.in/",
-   "https://fashionpro123.cartpe.in/",
-   "https://watchgalleryin.cartpe.in/",
-   "https://timezone17.cartpe.in/",
-   "https://watchflex.cartpe.in/",
-   "https://mangoenterprise.cartpe.in/",
-   "https://zeewatches.cartpe.in/",
    "https://maenterprise.cartpe.in/",
    "https://eye-care.cartpe.in/",
    "https://famwatch.cartpe.in/",
@@ -30,7 +22,15 @@ const baseUrls = [
    "https://watch-aqua.cartpe.in/",
    "https://watch-adda.cartpe.in/",
    "https://spwatches.cartpe.in/",
-   "https://watch-enterprise17.cartpe.in/"
+   "https://watch-enterprise17.cartpe.in/",
+   "https://watchstore17.cartpe.in/",
+   "https://city-watch19.cartpe.in/",
+   "https://fashionpro123.cartpe.in/",
+   "https://watchgalleryin.cartpe.in/",
+   "https://timezone17.cartpe.in/",
+   "https://watchflex.cartpe.in/",
+   "https://mangoenterprise.cartpe.in/",
+   "https://zeewatches.cartpe.in/"
 ];
 
 export { baseUrls };
