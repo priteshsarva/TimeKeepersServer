@@ -181,7 +181,7 @@ async function fetchDataa(baseUrls) {
         let productss = []; // Initialize productss for each URL
 
         try {
-            // Scrape categories from the current URL
+            // Scrape categories from the current URL 
             const categories = await scrapeCategories(page, fullUrl);
             // Scrape products for each category
             productss = await scrapeProducts(page, categories, url); // Pass the base URL here
