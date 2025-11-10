@@ -1,17 +1,4 @@
 const baseUrls = [
-   "https://watchkart.cartpe.in/",
-   "https://timepiece.cartpe.in/",
-   "https://hypewrist.cartpe.in/",
-   "https://jilaniwatches11.cartpe.in/",
-   "https://saenterprise.cartpe.in/",
-   "https://thetimekeepers.cartpe.in/",
-   "https://watchcode1.cartpe.in/",
-   "https://uzer-watch.cartpe.in/",
-   "https://utstorewatch.cartpe.in/",
-   "https://watch-aqua.cartpe.in/",
-   "https://watch-adda.cartpe.in/",
-   "https://spwatches.cartpe.in/",
-   "https://watch-enterprise17.cartpe.in/",
    "https://watchstore17.cartpe.in/",
    "https://city-watch19.cartpe.in/",
    "https://fashionpro123.cartpe.in/",
@@ -30,7 +17,20 @@ const baseUrls = [
    "https://awwaltime11.cartpe.in/",
    "https://watchhouse11.cartpe.in/",
    "https://wristifyreseller.cartpe.in/",
-   "https://watchfactorys.cartpe.in/"
+   "https://watchfactorys.cartpe.in/",
+   "https://watchkart.cartpe.in/",
+   "https://timepiece.cartpe.in/",
+   "https://hypewrist.cartpe.in/",
+   "https://jilaniwatches11.cartpe.in/",
+   "https://saenterprise.cartpe.in/",
+   "https://thetimekeepers.cartpe.in/",
+   "https://watchcode1.cartpe.in/",
+   "https://uzer-watch.cartpe.in/",
+   "https://utstorewatch.cartpe.in/",
+   "https://watch-aqua.cartpe.in/",
+   "https://watch-adda.cartpe.in/",
+   "https://spwatches.cartpe.in/",
+   "https://watch-enterprise17.cartpe.in/"
 ];
 
 export { baseUrls };
