@@ -1,5 +1,4 @@
 const baseUrls = [
-   "https://bismiwatches.cartpe.in/",
    "https://awwaltime11.cartpe.in/",
    "https://watchhouse11.cartpe.in/",
    "https://wristifyreseller.cartpe.in/",
@@ -30,7 +29,8 @@ const baseUrls = [
    "https://famwatch.cartpe.in/",
    "https://wristtimess.cartpe.in/",
    "https://watchclub.cartpe.in/",
-   "https://watchcultures.cartpe.in/"
+   "https://watchcultures.cartpe.in/",
+   "https://bismiwatches.cartpe.in/"
 ];
 
 export { baseUrls };
