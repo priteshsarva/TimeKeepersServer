@@ -129,7 +129,7 @@ product.get('/allresults', (req, res) => {
 });
 
 product.get("/bulkSafeSyncProducts", bulkSafeSyncProducts);
-product.get("/BulkProductOutOfStock", BulkProductOutOfStock);
+product.get("/bulkProductOutOfStock", BulkProductOutOfStock);
 
 
 
