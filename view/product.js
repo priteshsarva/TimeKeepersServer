@@ -1,7 +1,7 @@
 import { log } from "console";
 import { DB } from "../connect.js";
 import express from "express";
-import { bulkSafeSyncProducts } from "../controller/wpBulkSafeSync.js";
+import { bulkSafeSyncProducts, BulkProductOutOfStock } from "../controller/wpBulkSafeSync.js";
 
 const product = express()
 
@@ -129,6 +129,8 @@ product.get('/allresults', (req, res) => {
 });
 
 product.get("/bulkSafeSyncProducts", bulkSafeSyncProducts);
+product.get("/BulkProductOutOfStock", BulkProductOutOfStock);
+
 
 
 product.get("/syncWP", async (req, res) => {
