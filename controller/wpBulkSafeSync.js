@@ -424,7 +424,53 @@ export async function bulkSafeSyncProducts(req, res) {
   }
 }
 
+export async function BulkProductOutOfStock(req, res) {
+  console.log("🔄 Starting bulk sync (safe mode) from local DB → WooCommerce...");
 
+  try {
+
+
+    const rows = await new Promise((resolve, reject) => {
+      const currentTimestamp = Date.now(); // Current timestamp in milliseconds
+      // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
+      const twoDayAgo = currentTimestamp - 48 * 60 * 60 * 1000; // 48 hours ago in milliseconds
+
+
+      DB.all(
+        "SELECT * FROM PRODUCTS WHERE productLastUpdated <= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
+        [twoDayAgo],
+        (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+
+    console.log(`📦 Found ${rows.length} products to sync.`);
+
+    const batchSize = 5;
+    const delayMs = 250;
+
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
+      console.log(`🚀 Syncing batch ${i / batchSize + 1} (${batch.length} products)...`);
+
+      await Promise.all(batch.map((p) => upsertProductSafe(p)));
+      console.log(`✅ Batch ${i / batchSize + 1} complete. Waiting ${delayMs}ms...`);
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+
+    console.log("🎉 Bulk safe sync complete!");
+    res.send({ status: "success", message: "Bulk safe sync complete" });
+  } catch (err) {
+    console.error("❌ DB error:", err);
+    res.status(500).send({ error: err.message });
+  }
+}
 
 
 
