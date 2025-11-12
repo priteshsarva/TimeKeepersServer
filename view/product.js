@@ -457,6 +457,91 @@ product.get('/update-stale-sizes', (req, res) => {
     });
 });
 
+product.get('/mark-unavailable-products', (req, res) => {
+    const now = Date.now();
+    const cutoff = now - 3 * 24 * 60 * 60 * 1000; // 3 days ago
+    const staleIds = [];
+
+    console.log('Now:', new Date(now).toISOString());
+    console.log('Cutoff (3 days ago):', new Date(cutoff).toISOString());
+
+    const selectSQL = `SELECT productId, productLastUpdated FROM products`;
+
+    DB.all(selectSQL, [], (err, rows) => {
+        if (err) {
+            console.error('DB error:', err);
+            return res.status(500).json({ error: err.message });
+        }
+
+        console.log(`Fetched ${rows.length} rows from database`);
+
+        // Identify products that haven’t been updated in over 3 days
+        rows.forEach(row => {
+            try {
+                let lastUpdated = row.productLastUpdated;
+
+                // Convert to number if it's a string
+                if (typeof lastUpdated === 'string') {
+                    lastUpdated = parseInt(lastUpdated);
+                }
+
+                // Skip invalid timestamps
+                if (isNaN(lastUpdated)) {
+                    console.warn(`Invalid productLastUpdated for product ${row.productId}: ${row.productLastUpdated}`);
+                    return;
+                }
+
+                if (lastUpdated < cutoff) {
+                    staleIds.push(row.productId);
+                }
+            } catch (e) {
+                console.error(`Error processing product ${row.productId}:`, e);
+            }
+        });
+
+        console.log(`Found ${staleIds.length} products older than 3 days`);
+
+        if (staleIds.length === 0) {
+            return res.status(200).json({ message: 'No outdated products found.' });
+        }
+
+        // Update availability in transaction
+        DB.serialize(() => {
+            DB.run('BEGIN TRANSACTION');
+
+            let updateCount = 0;
+            const updateSQL = `UPDATE products SET availability = ?, productLastUpdated = ? WHERE productId = ?`;
+
+            staleIds.forEach(id => {
+                DB.run(updateSQL, [false, now, id], function (err) {
+                    if (err) {
+                        console.error(`Error updating product ${id}:`, err.message);
+                    } else {
+                        updateCount += this.changes;
+                        console.log(`Marked product ${id} unavailable`);
+                    }
+                });
+            });
+
+            DB.run('COMMIT', [], (err) => {
+                if (err) {
+                    console.error('Transaction error:', err);
+                    return res.status(500).json({ error: 'Transaction failed', details: err.message });
+                }
+
+                console.log(`Successfully marked ${updateCount} products unavailable`);
+                res.status(200).json({
+                    message: 'Mark unavailable completed',
+                    updatedCount: updateCount,
+                    totalOutdated: staleIds.length,
+                    productIds: staleIds
+                });
+            });
+        });
+    });
+});
+
+
 
 // API: Mark selected categories as unavailable
 product.get('/mark-categories-unavailable', (req, res) => {
