@@ -433,12 +433,12 @@ export async function BulkProductOutOfStock(req, res) {
     const rows = await new Promise((resolve, reject) => {
       const currentTimestamp = Date.now(); // Current timestamp in milliseconds
       // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
-      const twoDayAgo = currentTimestamp - 48 * 60 * 60 * 1000; // 48 hours ago in milliseconds
+      const threeDays = currentTimestamp - 3 * 24 * 60 * 60 * 1000; // 48 hours ago in milliseconds
 
 
       DB.all(
         "SELECT * FROM PRODUCTS WHERE productLastUpdated <= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
-        [twoDayAgo],
+        [threeDays],
         (err, result) => {
           if (err) {
             reject(err);
