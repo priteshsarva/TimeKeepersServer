@@ -428,17 +428,33 @@ export async function BulkProductOutOfStock(req, res) {
   console.log("🔄 Starting bulk sync (safe mode) from local DB → WooCommerce...");
 
   try {
+    const currentTimestamp = Date.now(); // Current timestamp in milliseconds
+    // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
+    const threeDays = currentTimestamp - 3 * 24 * 60 * 60 * 1000; // 48 hours ago in milliseconds
+    DB.run(
+      `UPDATE PRODUCTS 
+     SET availability = 0, productLastUpdated = ?
+     WHERE productLastUpdated <= ?
+     AND (availability = 1 OR availability = '1' OR availability = true OR availability = 'true')`,
+      [Date.now(), threeDays],
+      function (err) {
+        if (err) {
+          reject(err);
+        } else {
+          console.log("Rows updated:", this.changes);
+          resolve(this.changes);
+        }
+      }
+    );
 
 
     const rows = await new Promise((resolve, reject) => {
-      const currentTimestamp = Date.now(); // Current timestamp in milliseconds
-      // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
-      const threeDays = currentTimestamp - 3 * 24 * 60 * 60 * 1000; // 48 hours ago in milliseconds
-
+      const now = Date.now(); // Current timestamp in milliseconds
+      const hour = now - 1 * 60 * 60 * 1000; // 20 mins ago in milliseconds
 
       DB.all(
-        "SELECT * FROM PRODUCTS WHERE productLastUpdated <= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
-        [threeDays],
+        "SELECT * FROM PRODUCTS  WHERE productLastUpdated BETWEEN ? AND ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
+        [hour, now],
         (err, result) => {
           if (err) {
             reject(err);
@@ -449,8 +465,9 @@ export async function BulkProductOutOfStock(req, res) {
       );
     });
 
-    console.log(`📦 Found ${rows.length} products to sync.`);
 
+    console.log(`📦 Found ${rows.length} products to sync.`);
+    res.json(rows);
     const batchSize = 5;
     const delayMs = 250;
 
@@ -465,7 +482,7 @@ export async function BulkProductOutOfStock(req, res) {
     }
 
     console.log("🎉 Bulk safe sync complete!");
-    res.send({ status: "success", message: "Bulk safe sync complete" });
+    // res.send({ status: "success", message: "Bulk safe sync complete" });
   } catch (err) {
     console.error("❌ DB error:", err);
     res.status(500).send({ error: err.message });

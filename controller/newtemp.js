@@ -113,7 +113,7 @@ async function fetchDataa(baseUrls) {
 
 
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
         defaultViewport: { width: 1080, height: 800 },
         args: [
@@ -214,7 +214,7 @@ async function fetchDataa(baseUrls) {
 
 
     // Call the function when your task is done
-    gitAutoCommitAndPush(); 
+    gitAutoCommitAndPush();
     console.log("finished");
     console.log(Date.now());
     return allproducts;
@@ -276,63 +276,63 @@ async function scrapeProducts(page, categories, baseUrl) {
             await viewMore(page, productCount)
             console.log("After view more");
 
-           
+
 
             const productElements = await page.evaluate(() => {
-    const container = document.querySelector('#product_list_div');
-    if (!container) return [];
+                const container = document.querySelector('#product_list_div');
+                if (!container) return [];
 
-    const items = container.querySelectorAll('div.col-lg-4, div.col-md-6, div.col-6');
+                const items = container.querySelectorAll('div.col-lg-4, div.col-md-6, div.col-6');
 
-    return Array.from(items).map(item => {
+                return Array.from(items).map(item => {
 
-        // ============================
-        // IMAGE + DETAIL URL
-        // ============================
-        const img = item.querySelector('img.img-fluid');
-        const featuredimg = img?.src || null;
+                    // ============================
+                    // IMAGE + DETAIL URL
+                    // ============================
+                    const img = item.querySelector('img.img-fluid');
+                    const featuredimg = img?.src || null;
 
-        // Most reliable: parent <a> of the image
-        const detailUrl = img?.closest('a')?.href || null;
+                    // Most reliable: parent <a> of the image
+                    const detailUrl = img?.closest('a')?.href || null;
 
-        // ============================
-        // TITLE (first <h6> in card)
-        // ============================
-        const title =
-            item.querySelector('h6')?.innerText.trim() || null;
+                    // ============================
+                    // TITLE (first <h6> in card)
+                    // ============================
+                    const title =
+                        item.querySelector('h6')?.innerText.trim() || null;
 
-        // ============================
-        // PRICE (first <h6> inside the price wrapper)
-        // ============================
-        const price =
-            item.querySelector('div h6')?.innerText.trim() || null;
+                    // ============================
+                    // PRICE (first <h6> inside the price wrapper)
+                    // ============================
+                    const price =
+                        item.querySelector('div h6')?.innerText.trim() || null;
 
-        // ============================
-        // STOCK / BUTTON TEXT
-        // ============================
-        const button = item.querySelector('button');
-        const btnText = button?.innerText.trim().toLowerCase() || "";
-        const availability = btnText.includes("add to cart");
+                    // ============================
+                    // STOCK / BUTTON TEXT
+                    // ============================
+                    const button = item.querySelector('button');
+                    const btnText = button?.innerText.trim().toLowerCase() || "";
+                    const availability = btnText.includes("add to cart");
 
-        // ============================
-        // SIZES (all label.badge after "Size :")
-        // ============================
-        const sizeLabels = Array.from(
-            item.querySelectorAll('label.badge')
-        )
-            .map(l => l.innerText.trim())
-            .filter(s => s && s.toLowerCase() !== "size :");
+                    // ============================
+                    // SIZES (all label.badge after "Size :")
+                    // ============================
+                    const sizeLabels = Array.from(
+                        item.querySelectorAll('label.badge')
+                    )
+                        .map(l => l.innerText.trim())
+                        .filter(s => s && s.toLowerCase() !== "size :");
 
-        return {
-            title,
-            price,
-            featuredimg,
-            detailUrl,
-            availability,
-            sizes: sizeLabels
-        };
-    });
-});
+                    return {
+                        title,
+                        price,
+                        featuredimg,
+                        detailUrl,
+                        availability,
+                        sizes: sizeLabels
+                    };
+                });
+            });
 
             // console.log(productElements);
 
