@@ -267,7 +267,7 @@ async function scrapeProducts(page, categories, baseUrl) {
         try {
             // Navigate to the product page
             await page.goto(productUrl, { waitUntil: 'networkidle2', timeout: 120000 }); // Increase timeout to 120 seconds
-            await page.waitForSelector('.single-product', { timeout: 60000 }); // Increase timeout
+            await page.waitForSelector('#product_list_div', { timeout: 60000 }); // Increase timeout
 
             // Get the total number of products
             const productCount = await page.evaluate(() => {
@@ -276,38 +276,63 @@ async function scrapeProducts(page, categories, baseUrl) {
             await viewMore(page, productCount)
             console.log("After view more");
 
+           
+
             const productElements = await page.evaluate(() => {
-                const elements = document.querySelectorAll('.single-product');
-                return Array.from(elements).map(element => {
+    const container = document.querySelector('#product_list_div');
+    if (!container) return [];
 
-                    let availability = false;
-                    const buttonText = element.querySelector('button')?.innerText.trim().toLowerCase();
+    const items = container.querySelectorAll('div.col-lg-4, div.col-md-6, div.col-6');
 
-                    if (buttonText === 'add to cart') {
-                        availability = true;
-                    } else {
-                        availability = false;
-                    }
+    return Array.from(items).map(item => {
 
-                    const button = element.querySelector('.product-details > div > button');
-                    const sizes = button && button.innerText.trim() === 'Add to Cart'
-                        ? Array.from(element.querySelectorAll('.product-details > div > div > label'))
-                            .slice(1)
-                            .map(label => label.innerText.trim())
-                        : [];
+        // ============================
+        // IMAGE + DETAIL URL
+        // ============================
+        const img = item.querySelector('img.img-fluid');
+        const featuredimg = img?.src || null;
 
-                    return {
-                        title: element.querySelector('.product-details > a > h6')?.innerText.trim(),
-                        price: element.querySelector('.product-details > div > h6:nth-child(1)')?.innerText.trim(),
-                        featuredimg: element.querySelector('.product-img-block img')?.src,
-                        detailUrl: element.querySelector('.product-img-block img')?.parentElement.getAttribute('href'),
-                        availability: availability,
-                        sizes: Array.from(element.querySelectorAll('.product-details > div > div > label'))
-                            .slice(1) // Skip the first label if it's not a size
-                            .map(label => label.innerText.trim()),
-                    };
-                });
-            });
+        // Most reliable: parent <a> of the image
+        const detailUrl = img?.closest('a')?.href || null;
+
+        // ============================
+        // TITLE (first <h6> in card)
+        // ============================
+        const title =
+            item.querySelector('h6')?.innerText.trim() || null;
+
+        // ============================
+        // PRICE (first <h6> inside the price wrapper)
+        // ============================
+        const price =
+            item.querySelector('div h6')?.innerText.trim() || null;
+
+        // ============================
+        // STOCK / BUTTON TEXT
+        // ============================
+        const button = item.querySelector('button');
+        const btnText = button?.innerText.trim().toLowerCase() || "";
+        const availability = btnText.includes("add to cart");
+
+        // ============================
+        // SIZES (all label.badge after "Size :")
+        // ============================
+        const sizeLabels = Array.from(
+            item.querySelectorAll('label.badge')
+        )
+            .map(l => l.innerText.trim())
+            .filter(s => s && s.toLowerCase() !== "size :");
+
+        return {
+            title,
+            price,
+            featuredimg,
+            detailUrl,
+            availability,
+            sizes: sizeLabels
+        };
+    });
+});
 
             // console.log(productElements);
 
