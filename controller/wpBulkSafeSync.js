@@ -298,7 +298,7 @@ export async function upsertProductSafe(product, productId = null) {
         { key: "productOriginalPrice", value: product.productOriginalPrice },
         { key: "featuredimg", value: product.featuredimg.replace("gallery_sm", "gallery_md") },
 
-       
+
 
 
 
@@ -336,9 +336,23 @@ export async function upsertProductSafe(product, productId = null) {
         key: "productOriginalPrice",
         value: product.productOriginalPrice,
       });
+
+      let imageUrl;
+      if (typeof product?.imageUrl === "string") {
+        // Already a string → just replace
+        imageUrl = product.imageUrl.replace(/gallery_sm/g, "gallery_md");
+      } else {
+        // Not a string → convert to JSON string first, then replace
+        imageUrl = JSON.stringify(product?.imageUrl || []).replace(/gallery_sm/g, "gallery_md");
+      }
+
       payload.meta_data.push({
         key: "imageUrl",
-        value: product.imageUrl.replace("gallery_sm", "gallery_md") || "",
+        // value: product.imageUrl.replace("gallery_sm", "gallery_md") || "",
+        // value: json.stringify(product.imageUrl).replace("gallery_sm", "gallery_md") || "",
+        value: imageUrl,
+
+
       });
 
       payload.meta_data.push({

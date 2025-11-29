@@ -113,7 +113,7 @@ async function fetchDataa(baseUrls) {
 
 
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
         defaultViewport: { width: 1080, height: 800 },
         args: [
@@ -196,13 +196,13 @@ async function fetchDataa(baseUrls) {
         baseUrls.push(baseUrls.shift());
 
         // 💾 Save updated rotation to baseUrls.js (live)
-        const newFileContent = `const baseUrls = ${JSON.stringify(baseUrls, null, 3)};\n\nexport { baseUrls };`;
-        try {
-            fs.writeFileSync(baseUrlsPath, newFileContent, "utf-8");
-            console.log("File written successfully!");
-        } catch (err) {
-            console.error("Failed to write baseUrls.js:", err);
-        }
+        // const newFileContent = `const baseUrls = ${JSON.stringify(baseUrls, null, 3)};\n\nexport { baseUrls };`;
+        // try {
+            // fs.writeFileSync(baseUrlsPath, newFileContent, "utf-8");
+            // console.log("File written successfully!");
+        // } catch (err) {
+            // console.error("Failed to write baseUrls.js:", err);
+        // }
 
         console.log(`✅ Rotated & saved baseUrls.js — next start will begin from: ${baseUrls[0]}`);
     }
