@@ -231,7 +231,6 @@ export async function upsertProductSafe(product, productId = null) {
       console.warn(`⚠️ Skipping product — missing productId: ${product.productName}`);
     }
 
-    // const existing = await getProductBySKU(sku);
 
     // Use passed productId if available, otherwise look up by SKU
     let existing = null;
@@ -299,6 +298,11 @@ export async function upsertProductSafe(product, productId = null) {
         { key: "productOriginalPrice", value: product.productOriginalPrice },
         { key: "featuredimg", value: product.featuredimg.replace("gallery_sm", "gallery_md") },
 
+       
+
+
+
+
         // { key: "videoUrl", value: product.videoUrl || "" },  //add just for bulkupdated from server maually
         // { key: "imageUrl", value: product.imageUrl }, //add just for bulkupdated from server maually
 
@@ -320,7 +324,8 @@ export async function upsertProductSafe(product, productId = null) {
 
 
     // ✅ Add price, category & brand only for new products
-    if (!existing) {
+    // if (!existing) { activate after correction finesh
+    if (existing) {
       payload.regular_price = regularPrice;
       payload.sku,
         payload.meta_data.push({
@@ -333,7 +338,7 @@ export async function upsertProductSafe(product, productId = null) {
       });
       payload.meta_data.push({
         key: "imageUrl",
-        value: JSON.stringify(product.imageUrl || "").replace("gallery_sm", "gallery_md"),
+        value: product.imageUrl.replace("gallery_sm", "gallery_md") || "",
       });
 
       payload.meta_data.push({
@@ -387,7 +392,7 @@ export async function bulkSafeSyncProducts(req, res) {
 
       DB.all(
         "SELECT * FROM PRODUCTS WHERE productLastUpdated >= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
-        // "SELECT * FROM PRODUCTS WHERE productId = 34809;",
+        // "SELECT * FROM PRODUCTS WHERE productId = 38348;",
 
         // [oneDayAgo],
         [twelveAndHalfHoursAgo],
