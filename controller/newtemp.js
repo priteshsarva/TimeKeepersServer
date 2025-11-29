@@ -113,7 +113,7 @@ async function fetchDataa(baseUrls) {
 
 
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
         defaultViewport: { width: 1080, height: 800 },
         args: [
@@ -304,8 +304,17 @@ async function scrapeProducts(page, categories, baseUrl) {
                     // ============================
                     // PRICE (first <h6> inside the price wrapper)
                     // ============================
-                    const price =
-                        item.querySelector('div h6')?.innerText.trim() || null;
+                    // const price = item.querySelector('div h6')?.innerText.trim() || null;
+
+                    const rawPrice = Array.from(item.querySelectorAll('h6'))
+                        .map(el => el.innerText.trim())
+                        .find(text => /^[₹\s]*\d/.test(text)) || null;
+
+                    const price = rawPrice
+                        ?.replace(/[^0-9.]/g, '')  // keep only digits + decimal
+                        .trim() || null;
+                    console.log(price);
+
 
                     // ============================
                     // STOCK / BUTTON TEXT
