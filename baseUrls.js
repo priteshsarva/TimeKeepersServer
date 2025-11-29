@@ -1,5 +1,5 @@
 const baseUrls = [
-   "https://wristtimess.cartpe.in/",
+   "https://watchhouse11.cartpe.in/",
    "https://maenterprise.cartpe.in/",
    "https://eye-care.cartpe.in/",
    "https://famwatch.cartpe.in/",
@@ -7,7 +7,6 @@ const baseUrls = [
    "https://watchcultures.cartpe.in/",
    "https://bismiwatches.cartpe.in/",
    "https://awwaltime11.cartpe.in/",
-   "https://watchhouse11.cartpe.in/",
    "https://wristifyreseller.cartpe.in/",
    "https://watchfactorys.cartpe.in/",
    "https://watchkart.cartpe.in/",
@@ -30,7 +29,8 @@ const baseUrls = [
    "https://timezone17.cartpe.in/",
    "https://watchflex.cartpe.in/",
    "https://mangoenterprise.cartpe.in/",
-   "https://zeewatches.cartpe.in/"
+   "https://zeewatches.cartpe.in/",
+   "https://wristtimess.cartpe.in/"
 ];
 
 export { baseUrls };
