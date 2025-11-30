@@ -321,7 +321,12 @@ async function scrapeProducts(page, categories, baseUrl) {
                     // ============================
                     const button = item.querySelector('button');
                     const btnText = button?.innerText.trim().toLowerCase() || "";
-                    const availability = btnText.includes("add to cart");
+                    let availability
+                    if (btnText.includes("add to cart")) {
+                        availability = true;
+                    } else {
+                        availability = false;
+                    }
 
                     // ============================
                     // SIZES (all label.badge after "Size :")
