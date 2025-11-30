@@ -254,7 +254,7 @@ export async function upsertProductSafe(product, productId = null) {
       console.log(`🆕 Creating new product: ${product.productName}`);
     }
 
-    const categoryId = !existing ? await getOrCreateCategory(product.catName) : null;
+    const categoryId = existing ? await getOrCreateCategory(product.catName) : null;
     // const brandId = !existing ? await getOrCreateBrand(product.productBrand) : null;  //use while creating new
     // const brandId = existing ? await getOrCreateBrand(product.productBrand) : null;  //used while i was doing bulk update
     const brandId = await getOrCreateBrand(product.productBrand);  //used while i was doing bulk update from devupdate
@@ -338,12 +338,12 @@ export async function upsertProductSafe(product, productId = null) {
       });
 
       let imageUrl;
-      if (typeof product?.imageUrl === "string") {
+      if (typeof product.imageUrl === "string") {
         // Already a string → just replace
-        imageUrl = product.imageUrl.replace(/gallery_sm/g, "gallery_md");
+        imageUrl = product.imageUrl.replace("gallery_sm", "gallery_md");
       } else {
         // Not a string → convert to JSON string first, then replace
-        imageUrl = JSON.stringify(product?.imageUrl || []).replace(/gallery_sm/g, "gallery_md");
+        imageUrl = JSON.stringify(product.imageUrl || []).replace("gallery_sm", "gallery_md");
       }
 
       payload.meta_data.push({
@@ -351,8 +351,6 @@ export async function upsertProductSafe(product, productId = null) {
         // value: product.imageUrl.replace("gallery_sm", "gallery_md") || "",
         // value: json.stringify(product.imageUrl).replace("gallery_sm", "gallery_md") || "",
         value: imageUrl,
-
-
       });
 
       payload.meta_data.push({
@@ -401,7 +399,7 @@ export async function bulkSafeSyncProducts(req, res) {
     const rows = await new Promise((resolve, reject) => {
       const currentTimestamp = Date.now(); // Current timestamp in milliseconds
       // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
-      const twelveAndHalfHoursAgo = currentTimestamp - 12.5 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
+      const twelveAndHalfHoursAgo = currentTimestamp - 30 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
 
 
       DB.all(
@@ -450,12 +448,11 @@ export async function BulkProductOutOfStock(req, res) {
     const currentTimestamp = Date.now(); // Current timestamp in milliseconds
     // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
     const threeDays = currentTimestamp - 3 * 24 * 60 * 60 * 1000; // 48 hours ago in milliseconds
-    DB.run(
-      `UPDATE PRODUCTS 
-     SET availability = 0, productLastUpdated = ?
-     WHERE productLastUpdated <= ?
-     AND (availability = 1 OR availability = '1' OR availability = true OR availability = 'true')`,
-      [Date.now(), threeDays],
+
+
+
+      DB.run(
+      `UPDATE PRODUCTS SET availability = false WHERE NOT ( productOriginalPrice GLOB '[0-9]*' OR productOriginalPrice GLOB '[0-9]*.[0-9]*' );`,
       function (err) {
         if (err) {
           reject(err);
@@ -467,38 +464,57 @@ export async function BulkProductOutOfStock(req, res) {
     );
 
 
-    const rows = await new Promise((resolve, reject) => {
-      const now = Date.now(); // Current timestamp in milliseconds
-      const hour = now - 1 * 60 * 60 * 1000; // 20 mins ago in milliseconds
-
-      DB.all(
-        "SELECT * FROM PRODUCTS  WHERE productLastUpdated BETWEEN ? AND ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
-        [hour, now],
-        (err, result) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-    });
 
 
-    console.log(`📦 Found ${rows.length} products to sync.`);
-    res.json(rows);
-    const batchSize = 5;
-    const delayMs = 250;
+    // DB.run(
+    //   `UPDATE PRODUCTS 
+    //  SET availability = 0, productLastUpdated = ?
+    //  WHERE productLastUpdated <= ?
+    //  AND (availability = 1 OR availability = '1' OR availability = true OR availability = 'true')`,
+    //   [Date.now(), threeDays],
+    //   function (err) {
+    //     if (err) {
+    //       reject(err);
+    //     } else {
+    //       console.log("Rows updated:", this.changes);
+    //       resolve(this.changes);
+    //     }
+    //   }
+    // );
 
-    for (let i = 0; i < rows.length; i += batchSize) {
-      const batch = rows.slice(i, i + batchSize);
-      console.log(`🚀 Syncing batch ${i / batchSize + 1} (${batch.length} products)...`);
 
-      await Promise.all(batch.map((p) => upsertProductSafe(p)));
-      console.log(`✅ Batch ${i / batchSize + 1} complete. Waiting ${delayMs}ms...`);
+    // const rows = await new Promise((resolve, reject) => {
+    //   const now = Date.now(); // Current timestamp in milliseconds
+    //   const hour = now - 1 * 60 * 60 * 1000; // 20 mins ago in milliseconds
 
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
+    //   DB.all(
+    //     "SELECT * FROM PRODUCTS  WHERE productLastUpdated BETWEEN ? AND ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
+    //     [hour, now],
+    //     (err, result) => {
+    //       if (err) {
+    //         reject(err);
+    //       } else {
+    //         resolve(result);
+    //       }
+    //     }
+    //   );
+    // });
+
+
+    // console.log(`📦 Found ${rows.length} products to sync.`);
+    // res.json(rows);
+    // const batchSize = 5;
+    // const delayMs = 250;
+
+    // for (let i = 0; i < rows.length; i += batchSize) {
+    //   const batch = rows.slice(i, i + batchSize);
+    //   console.log(`🚀 Syncing batch ${i / batchSize + 1} (${batch.length} products)...`);
+
+    //   await Promise.all(batch.map((p) => upsertProductSafe(p)));
+    //   console.log(`✅ Batch ${i / batchSize + 1} complete. Waiting ${delayMs}ms...`);
+
+    //   await new Promise((resolve) => setTimeout(resolve, delayMs));
+    // }
 
     console.log("🎉 Bulk safe sync complete!");
     // res.send({ status: "success", message: "Bulk safe sync complete" });

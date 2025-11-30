@@ -198,10 +198,10 @@ async function fetchDataa(baseUrls) {
         // 💾 Save updated rotation to baseUrls.js (live)
         // const newFileContent = `const baseUrls = ${JSON.stringify(baseUrls, null, 3)};\n\nexport { baseUrls };`;
         // try {
-            // fs.writeFileSync(baseUrlsPath, newFileContent, "utf-8");
-            // console.log("File written successfully!");
+        // fs.writeFileSync(baseUrlsPath, newFileContent, "utf-8");
+        // console.log("File written successfully!");
         // } catch (err) {
-            // console.error("Failed to write baseUrls.js:", err);
+        // console.error("Failed to write baseUrls.js:", err);
         // }
 
         console.log(`✅ Rotated & saved baseUrls.js — next start will begin from: ${baseUrls[0]}`);
@@ -397,10 +397,10 @@ async function scrapeProducts(page, categories, baseUrl) {
                     console.log(`Skipped upsertProductSafe due to WordPress flag. ProductID = ${productId}}`);
                 } else {
                     console.log(`upsertProductSafe with id=${productId} `)
-                 //   await upsertProductSafe(eachproduct, productId);
+                    //   await upsertProductSafe(eachproduct, productId);
                 }
-             //   for temporary full update
-                    await upsertProductSafe(eachproduct, productId);
+                //   for temporary full update
+                await upsertProductSafe(eachproduct, productId);
 
                 console.log("From Each Product");
             }
@@ -847,6 +847,11 @@ async function updateProduct(product) {
             let updateQuery = 'UPDATE PRODUCTS SET ';
             const updates = [];
             const values = [];
+
+            if (typeof product.productName !== 'undefined') {
+                updates.push(`productName = ?`);
+                values.push(product.productName);
+            }
 
             if (typeof product.productPrice !== 'undefined') {
                 updates.push(`productPrice = ?`);
