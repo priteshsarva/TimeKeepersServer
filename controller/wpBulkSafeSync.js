@@ -2,7 +2,6 @@
 import fetch from "node-fetch";
 import "dotenv/config";
 import { DB } from "../connect.js";
-import { log } from "console";
 import { brandMap } from "./updateProductCategoryAndBrand.js";
 
 const WP_URL = process.env.WP_URL;
@@ -254,10 +253,10 @@ export async function upsertProductSafe(product, productId = null) {
       console.log(`🆕 Creating new product: ${product.productName}`);
     }
 
-    const categoryId = existing ? await getOrCreateCategory(product.catName) : null;
+    const categoryId = !existing ? await getOrCreateCategory(product.catName) : null;
     // const brandId = !existing ? await getOrCreateBrand(product.productBrand) : null;  //use while creating new
     // const brandId = existing ? await getOrCreateBrand(product.productBrand) : null;  //used while i was doing bulk update
-    const brandId = await getOrCreateBrand(product.productBrand);  //used while i was doing bulk update from devupdate
+    const brandId = !existing ? await getOrCreateBrand(product.productBrand) : null;  //used while i was doing bulk update from devupdate
 
     let images = [];
     try {
@@ -290,30 +289,12 @@ export async function upsertProductSafe(product, productId = null) {
       description: product.productDescription || "",
       short_description: product.productShortDescription || "",
       stock_status,
-      brands: [{ id: brandId }], // for temp
       meta_data: [
         { key: "productFetchedFrom", value: product.productFetchedFrom },
         { key: "productUrl", value: product.productUrl },
         { key: "availability", value: product.availability },
         { key: "productOriginalPrice", value: product.productOriginalPrice },
         { key: "featuredimg", value: product.featuredimg.replace("gallery_sm", "gallery_md") },
-
-
-
-
-
-
-        // { key: "videoUrl", value: product.videoUrl || "" },  //add just for bulkupdated from server maually
-        // { key: "imageUrl", value: product.imageUrl }, //add just for bulkupdated from server maually
-
-        // check it later dont miss this make this for videoUrl also
-        // {
-        //   key: "imageUrl", value: product.imageUrl || (existing.meta_data?.find(m => m.key === "imageUrl")?.value || "")
-        // },
-        // {
-        //   key: "videoUrl", value: product.videoUrl || (existing.meta_data?.find(m => m.key === "videoUrl")?.value || "")
-        // },
-
 
         { key: "productBrand", value: product.productBrand },
         { key: "productLastUpdated", value: product.productLastUpdated || Date.now() },
@@ -325,7 +306,7 @@ export async function upsertProductSafe(product, productId = null) {
 
     // ✅ Add price, category & brand only for new products
     // if (!existing) { activate after correction finesh
-    if (existing) {
+    if (!existing) {
       payload.regular_price = regularPrice;
       payload.sku,
         payload.meta_data.push({
@@ -348,8 +329,6 @@ export async function upsertProductSafe(product, productId = null) {
 
       payload.meta_data.push({
         key: "imageUrl",
-        // value: product.imageUrl.replace("gallery_sm", "gallery_md") || "",
-        // value: json.stringify(product.imageUrl).replace("gallery_sm", "gallery_md") || "",
         value: imageUrl,
       });
 
@@ -359,11 +338,9 @@ export async function upsertProductSafe(product, productId = null) {
       });
 
       if (categoryId) payload.categories = [{ id: categoryId }];
-
       // Directly assign the brand for new products
       if (brandId) payload.brands = [{ id: brandId }];
 
-      // payload.images = images;
     }
 
 
@@ -399,12 +376,11 @@ export async function bulkSafeSyncProducts(req, res) {
     const rows = await new Promise((resolve, reject) => {
       const currentTimestamp = Date.now(); // Current timestamp in milliseconds
       // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
-      const twelveAndHalfHoursAgo = currentTimestamp - 30 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
+      const twelveAndHalfHoursAgo = currentTimestamp - 12.5 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
 
 
       DB.all(
         "SELECT * FROM PRODUCTS WHERE productLastUpdated >= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
-        // "SELECT * FROM PRODUCTS WHERE productId = 38348;",
 
         // [oneDayAgo],
         [twelveAndHalfHoursAgo],
@@ -420,7 +396,7 @@ export async function bulkSafeSyncProducts(req, res) {
 
     console.log(`📦 Found ${rows.length} products to sync.`);
 
-    const batchSize = 5;
+    const batchSize = 10;
     const delayMs = 250;
 
     for (let i = 0; i < rows.length; i += batchSize) {
@@ -447,31 +423,12 @@ export async function BulkProductOutOfStock(req, res) {
   try {
     const currentTimestamp = Date.now(); // Current timestamp in milliseconds
     // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
-    const threeDays = currentTimestamp - 3 * 24 * 60 * 60 * 1000; // 48 hours ago in milliseconds
+    const threeDays = currentTimestamp - 3 * 24 * 60 * 60 * 1000; // 3 days ago in milliseconds
 
 
 
-      DB.run(
-      `UPDATE PRODUCTS SET availability = false WHERE NOT ( productOriginalPrice GLOB '[0-9]*' OR productOriginalPrice GLOB '[0-9]*.[0-9]*' );`,
-      function (err) {
-        if (err) {
-          reject(err);
-        } else {
-          console.log("Rows updated:", this.changes);
-          resolve(this.changes);
-        }
-      }
-    );
-
-
-
-
-    // DB.run(
-    //   `UPDATE PRODUCTS 
-    //  SET availability = 0, productLastUpdated = ?
-    //  WHERE productLastUpdated <= ?
-    //  AND (availability = 1 OR availability = '1' OR availability = true OR availability = 'true')`,
-    //   [Date.now(), threeDays],
+    //   DB.run(
+    //   `UPDATE PRODUCTS SET availability = false WHERE NOT ( productOriginalPrice GLOB '[0-9]*' OR productOriginalPrice GLOB '[0-9]*.[0-9]*' );`,
     //   function (err) {
     //     if (err) {
     //       reject(err);
@@ -483,38 +440,57 @@ export async function BulkProductOutOfStock(req, res) {
     // );
 
 
-    // const rows = await new Promise((resolve, reject) => {
-    //   const now = Date.now(); // Current timestamp in milliseconds
-    //   const hour = now - 1 * 60 * 60 * 1000; // 20 mins ago in milliseconds
-
-    //   DB.all(
-    //     "SELECT * FROM PRODUCTS  WHERE productLastUpdated BETWEEN ? AND ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
-    //     [hour, now],
-    //     (err, result) => {
-    //       if (err) {
-    //         reject(err);
-    //       } else {
-    //         resolve(result);
-    //       }
-    //     }
-    //   );
-    // });
 
 
-    // console.log(`📦 Found ${rows.length} products to sync.`);
-    // res.json(rows);
-    // const batchSize = 5;
-    // const delayMs = 250;
+    DB.run(
+      `UPDATE PRODUCTS 
+     SET availability = 0, productLastUpdated = ?
+     WHERE productLastUpdated <= ?
+     AND (availability = 1 OR availability = '1' OR availability = true OR availability = 'true')`,
+      [Date.now(), threeDays],
+      function (err) {
+        if (err) {
+          reject(err);
+        } else {
+          console.log("Rows updated:", this.changes);
+          resolve(this.changes);
+        }
+      }
+    );
 
-    // for (let i = 0; i < rows.length; i += batchSize) {
-    //   const batch = rows.slice(i, i + batchSize);
-    //   console.log(`🚀 Syncing batch ${i / batchSize + 1} (${batch.length} products)...`);
 
-    //   await Promise.all(batch.map((p) => upsertProductSafe(p)));
-    //   console.log(`✅ Batch ${i / batchSize + 1} complete. Waiting ${delayMs}ms...`);
+    const rows = await new Promise((resolve, reject) => {
+      const now = Date.now(); // Current timestamp in milliseconds
+      const twentymins = now - 20 * 60 * 1000; // 20 mins ago in milliseconds
 
-    //   await new Promise((resolve) => setTimeout(resolve, delayMs));
-    // }
+      DB.all(
+        "SELECT * FROM PRODUCTS  WHERE productLastUpdated BETWEEN ? AND ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
+        [twentymins, now],
+        (err, result) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+    });
+
+
+    console.log(`📦 Found ${rows.length} products to sync.`);
+    res.json(rows);
+    const batchSize = 10;
+    const delayMs = 250;
+
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
+      console.log(`🚀 Syncing batch ${i / batchSize + 1} (${batch.length} products)...`);
+
+      await Promise.all(batch.map((p) => upsertProductSafe(p)));
+      console.log(`✅ Batch ${i / batchSize + 1} complete. Waiting ${delayMs}ms...`);
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
 
     console.log("🎉 Bulk safe sync complete!");
     // res.send({ status: "success", message: "Bulk safe sync complete" });
