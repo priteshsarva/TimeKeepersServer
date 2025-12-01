@@ -376,7 +376,7 @@ export async function bulkSafeSyncProducts(req, res) {
     const rows = await new Promise((resolve, reject) => {
       const currentTimestamp = Date.now(); // Current timestamp in milliseconds
       // const oneDayAgo = currentTimestamp - 100 * 60 * 60 * 1000; // 24 hours ago in milliseconds
-      const twelveAndHalfHoursAgo = currentTimestamp - 12.5 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
+      const twelveAndHalfHoursAgo = currentTimestamp - 24 * 60 * 60 * 1000; // 12.5 hours ago in milliseconds
 
 
       DB.all(
