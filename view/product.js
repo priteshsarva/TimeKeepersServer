@@ -145,7 +145,7 @@ product.get("/syncWP", async (req, res) => {
                 return res.status(500).json({ code: 500, error: err.message });
             }
 
-            console.log(`🚀 Found ${rows.length} products in database, syncing to WooCommerce...`);
+            console.log("🚀 Found " + rows.length + "products in database, syncing to WooCommerce...");
 
             let success = 0;
             let failed = 0;
@@ -155,7 +155,7 @@ product.get("/syncWP", async (req, res) => {
                     await upsertProduct(product);
                     success++;
                 } catch (err) {
-                    console.error(`❌ Failed to sync product ${product.productName}:`, err);
+                    console.error("❌ Failed to sync product " + product.productName + ":", err);
                     failed++;
                 }
             }

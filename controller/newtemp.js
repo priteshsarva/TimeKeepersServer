@@ -11,7 +11,8 @@ import "dotenv/config";
 import { exec } from 'child_process';
 import { humanizePage, humanType } from './humanize.js';
 import { log } from 'console';
-import { upsertProductSafe } from './wpBulkSafeSync.js'
+import { upsertProductSafe, syncProductToAllSites } from "./wpBulkSafeSync.js";
+
 import { updateProductCategory } from './updateProductCategoryAndBrand.js';
 
 // const baseUrls = ['https://oneshoess.cartpe.in', 'https://reseller-store.cartpe.in'];
@@ -104,6 +105,7 @@ function gitAutoCommitAndPush() {
         });
     });
 }
+
 
 // Main function to fetch data
 async function fetchDataa(baseUrls) {
@@ -248,7 +250,7 @@ async function scrapeProducts(page, categories, baseUrl) {
             const productCount = await page.evaluate(() => {
                 return document.querySelector('#total_result_cnt')?.innerText || 0;
             });
-            await viewMore(page, productCount)
+           // await viewMore(page, productCount)
             console.log("After view more");
 
 
@@ -377,7 +379,8 @@ async function scrapeProducts(page, categories, baseUrl) {
                     console.log(`Skipped upsertProductSafe due to WordPress flag. ProductID = ${productId}}`);
                 } else {
                     console.log(`upsertProductSafe with id=${productId} `)
-                    await upsertProductSafe(eachproduct, productId);
+                    // await upsertProductSafe(eachproduct, productId);
+                    await syncProductToAllSites(eachproduct, productId);
                 }       
                 console.log("From Each Product");
             }
