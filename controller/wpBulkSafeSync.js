@@ -325,7 +325,9 @@ export async function bulkSafeSyncProducts(req, res) {
 
 
       DB.all(
+        // "SELECT * FROM PRODUCTS WHERE productLastUpdated >= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
         "SELECT * FROM PRODUCTS WHERE productLastUpdated >= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
+        
 
         // [oneDayAgo],
         [twelveAndHalfHoursAgo],
