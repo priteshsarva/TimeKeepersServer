@@ -27,11 +27,11 @@ const WP_SITES = [
 // Add this new function to handle syncs from your scraper
 export async function syncProductToAllSites(product, productId = null) {
   console.log(`🚀 Syncing scraped product across ${WP_SITES.length} sites...`);
-  
-  const syncPromises = WP_SITES.map((site) => 
+
+  const syncPromises = WP_SITES.map((site) =>
     upsertProductSafe(product, site, productId)
   );
-  
+
   await Promise.all(syncPromises);
 }
 
@@ -325,9 +325,10 @@ export async function bulkSafeSyncProducts(req, res) {
 
 
       DB.all(
-        // "SELECT * FROM PRODUCTS WHERE productLastUpdated >= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
         "SELECT * FROM PRODUCTS WHERE productLastUpdated >= ? ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;",
-        
+        // "UPDATE PRODUCTS SET availability = 0 WHERE productFetchedFrom IN (    'https://watchhouse11.cartpe.in/',    'https://saenterprise.cartpe.in/',    'https://jilaniwatches11.cartpe.in/',    'https://thetimekeepers.cartpe.in/')",
+        // "SELECT * FROM PRODUCTS WHERE productFetchedFrom IN (    'https://watchhouse11.cartpe.in/',    'https://saenterprise.cartpe.in/',    'https://jilaniwatches11.cartpe.in/',    'https://thetimekeepers.cartpe.in/')",
+
 
         // [oneDayAgo],
         [twelveAndHalfHoursAgo],
@@ -364,6 +365,8 @@ export async function bulkSafeSyncProducts(req, res) {
 
     console.log("🎉 Bulk safe sync complete!");
     res.send({ status: "success", message: "Bulk safe sync complete" });
+    // res.json(rows);
+
   } catch (err) {
     console.error("❌ DB error:", err);
     res.status(500).send({ error: err.message });
