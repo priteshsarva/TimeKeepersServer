@@ -399,10 +399,13 @@ export async function BulkProductOutOfStock(req, res) {
 
 
     DB.run(
-      `UPDATE PRODUCTS 
+    //   `UPDATE PRODUCTS 
+    //  SET availability = 0, productLastUpdated = ?
+    //  WHERE productLastUpdated <= ?
+    //  AND (availability = 1 OR availability = '1' OR availability = true OR availability = 'true')`,
+     `UPDATE PRODUCTS 
      SET availability = 0, productLastUpdated = ?
-     WHERE productLastUpdated <= ?
-     AND (availability = 1 OR availability = '1' OR availability = true OR availability = 'true')`,
+     WHERE productLastUpdated <= ?`,
       [Date.now(), threeDays],
       function (err) {
         if (err) {
