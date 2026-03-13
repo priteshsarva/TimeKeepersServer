@@ -1,7 +1,7 @@
 const baseUrls = [
-   'https://timetraders.cartpe.in/',
-   'https://timesqquare.cartpe.in/',
-   'https://herchoice.cartpe.in',
+   "https://timetraders.cartpe.in/",
+   "https://timesqquare.cartpe.in/",
+   "https://herchoice.cartpe.in",
    "https://hypewrist.cartpe.in/",
    "https://jilaniwatches11.cartpe.in/",
    "https://saenterprise.cartpe.in/",
