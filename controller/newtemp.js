@@ -250,7 +250,7 @@ async function scrapeProducts(page, categories, baseUrl) {
             const productCount = await page.evaluate(() => {
                 return document.querySelector('#total_result_cnt')?.innerText || 0;
             });
-           // await viewMore(page, productCount)
+           await viewMore(page, productCount)
             console.log("After view more");
 
 
