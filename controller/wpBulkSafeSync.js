@@ -469,7 +469,88 @@ export async function BulkProductOutOfStock(req, res) {
   }
 }
 
+export async function bulkProductCategoryUpdated(req, res) {
+  console.log("🔄 Starting bulk sync (safe mode) from local DB → WooCommerce...");
 
+  try {
+
+    // 🔥 STEP 1: Apply Luxury Watch category (OLD LOGIC ADDED HERE)
+    const targetSources = [
+      "https://wristifyreseller.cartpe.in/",
+      "https://watchfactorys.cartpe.in/",
+      "https://watchkart.cartpe.in/",
+      "https://timepiece.cartpe.in/",
+      "https://hypewrist.cartpe.in/"
+    ];
+
+    const placeholders = targetSources.map(() => '?').join(',');
+
+    const updateSQL = `
+      UPDATE products 
+      SET catName = 'Luxury Watch' 
+      WHERE productFetchedFrom IN (${placeholders})
+    `;
+
+    await new Promise((resolve, reject) => {
+      DB.run(updateSQL, targetSources, function (err) {
+        if (err) {
+          console.error('❌ Error updating luxury watch categories:', err.message);
+          reject(err);
+        } else {
+          console.log(`✅ Updated ${this.changes} products to 'Luxury Watch'`);
+          resolve();
+        }
+      });
+    });
+
+
+    // 🔥 STEP 2: Fetch recently updated products (your existing logic)
+    const rows = await new Promise((resolve, reject) => {
+      const currentTimestamp = Date.now();
+      const twelveAndHalfHoursAgo = currentTimestamp - 24 * 60 * 60 * 1000;
+
+      DB.all(
+        `SELECT * FROM PRODUCTS 
+         WHERE productLastUpdated >= ? 
+         ORDER BY datetime(productLastUpdated / 1000, 'unixepoch') DESC;`,
+        [twelveAndHalfHoursAgo],
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
+    });
+
+    console.log(`📦 Found ${rows.length} products to sync.`);
+
+    const batchSize = 10;
+    const delayMs = 250;
+
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
+
+      console.log(
+        `🚀 Syncing batch ${i / batchSize + 1} (${batch.length} products) across ${WP_SITES.length} sites...`
+      );
+
+      const syncPromises = batch.flatMap((p) =>
+        WP_SITES.map((site) => upsertProductSafe(p, site))
+      );
+
+      await Promise.all(syncPromises);
+
+      console.log(`✅ Batch ${i / batchSize + 1} complete. Waiting ${delayMs}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+
+    console.log("🎉 Bulk safe sync complete!");
+    res.send({ status: "success", message: "Bulk safe sync complete" });
+
+  } catch (err) {
+    console.error("❌ DB error:", err);
+    res.status(500).send({ error: err.message });
+  }
+}
 
 // ---------------- FIX BRAND HIERARCHY USING brandMap (single-site) ----------------
 // export async function fixBrandsFromMap() {
