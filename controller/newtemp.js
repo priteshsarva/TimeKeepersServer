@@ -939,6 +939,7 @@ async function viewMore(page, productCount) {
         }
     }
 }
+
 async function scrapeImages(page, url) {
 
     console.log(`Scraping images from: ${url}`);
