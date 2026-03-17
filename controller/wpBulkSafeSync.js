@@ -15,12 +15,12 @@ const WP_SITES = [
     user: process.env.WP_USER,
     password: process.env.WP_APP_PASSWORD,
   },
-  {
-    name: "StyleNova",
-    url: process.env.WP_URL_1,
-    user: process.env.WP_USER_1,
-    password: process.env.WP_APP_PASSWORD_1,
-  },
+  // {
+  //   name: "StyleNova",
+  //   url: process.env.WP_URL_1,
+  //   user: process.env.WP_USER_1,
+  //   password: process.env.WP_APP_PASSWORD_1,
+  // },
   // add as many as you need
 ];
 
